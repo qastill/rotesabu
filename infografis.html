@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Infografis Rote Ndao & Sabu Raijua</title>
+<meta name="description" content="Infografis satu halaman: posisi empat sistem kelistrikan Rote, Ndao, Sabu, Raijua dan arah transisi diesel ke surya.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 34'%3E%3Ccircle cx='17' cy='17' r='17' fill='%230f6577'/%3E%3Ccircle cx='17' cy='14' r='6' fill='%23ffc53d'/%3E%3Cpath d='M4 22q4-4 8 0t8 0 10 0v12H4z' fill='%23f6e7b4'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Sofia+Sans+Condensed:wght@700;800&display=swap" rel="stylesheet">
+<style>
+/* Poster dirancang pada lebar tetap 1200 px supaya PNG-nya identik dengan halaman; di layar sempit diperkecil dengan transform. */
+:root{--bg:#f4f2ea;--card:#fff;--ink:#122a30;--mute:#5b7075;--line:#dde2da;--soft:#eef0e8;--sea:#0f6577;--sea2:#0c5566;--land:#f6e7b4;--acc:#ff5a1f;--acc2:#c63c0a;--ok:#178f64;--sun:#ffc53d;--warn:#d03b3b;--s1:#2a78d6;--s4:#eda100;color-scheme:light}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:#e9e6dc;color:var(--ink);font:15px/1.45 "Instrument Sans",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.bar{max-width:1200px;margin:0 auto;padding:14px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.bar a,.bar button{display:inline-flex;align-items:center;gap:8px;border-radius:10px;padding:9px 14px;font:600 14px/1 "Instrument Sans",sans-serif;border:1px solid var(--line);background:#fff;color:var(--ink);text-decoration:none;cursor:pointer}
+.bar .pri{background:var(--sea);border-color:var(--sea);color:#fff}
+.wrap{overflow:auto;padding:0 16px 40px}
+.poster{width:1200px;margin:0 auto;background:var(--bg);border-radius:24px;padding:48px 52px 36px;box-shadow:0 20px 60px rgb(0 0 0/.12);position:relative;overflow:hidden}
+h1,h2,h3,.big{font-family:"Sofia Sans Condensed","Arial Narrow",sans-serif;font-weight:800;line-height:1;margin:0;letter-spacing:.01em}
+h1{font-size:60px}h1 span{color:var(--acc2)}h2{font-size:30px}h3{font-size:24px}
+p{margin:0}
+.badge{display:inline-block;background:var(--ink);color:#fff;border-radius:99px;padding:6px 14px;font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+.head{display:grid;grid-template-columns:1fr 360px;gap:30px;align-items:center;margin-bottom:30px}
+.head p.lead{font-size:18px;color:var(--mute);margin-top:12px;max-width:62ch}
+.map{position:relative;aspect-ratio:840/390;background:var(--sea);border-radius:20px;overflow:hidden}
+.map svg{position:absolute;inset:0;width:100%;height:100%}
+.map .lab{position:absolute;transform:translate(-50%,-50%);background:#fff;border-radius:8px;padding:4px 8px;font:800 14px/1 "Sofia Sans Condensed",sans-serif;white-space:nowrap}
+.row{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:26px}
+.sys{background:#fff;border-radius:18px;padding:18px 20px;position:relative}
+.sys .t{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.sys .t h2{font-size:34px}
+.tag{font-size:12px;font-weight:600;color:var(--mute)}
+.tag.w{color:var(--warn)}
+.big{font-size:44px;margin-top:10px}.big small{font-size:18px;color:var(--mute);font-weight:700}
+.sub{font-size:13px;color:var(--mute)}
+.meter{margin-top:12px;display:grid;gap:6px;font-size:12.5px}
+.meter>div{display:grid;grid-template-columns:62px 1fr 60px;align-items:center;gap:8px}
+.meter s{display:block;height:10px;border-radius:4px;background:var(--sea);text-decoration:none}
+.meter s.pk{background:var(--acc)}.meter em{font-style:normal;font-weight:700;text-align:right}
+.stat{margin-top:12px;border-radius:10px;padding:8px 10px;font-size:13px;font-weight:600}
+.stat.ok{background:#e3f3ec;color:var(--ok)}.stat.w{background:#fde8e8;color:var(--warn)}
+.sys .pv{margin-top:8px;font-size:13px;color:var(--mute)}.sys .pv b{color:var(--ink)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:26px}
+.panel{background:#fff;border-radius:18px;padding:18px 20px}
+.panel .hd{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:6px;flex-wrap:wrap}
+.panel .hd span{font-size:13px;color:var(--mute)}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart text{font-family:"Instrument Sans",sans-serif;font-size:12px;fill:var(--mute)}
+.chart .gl{stroke:#e6e5de}.chart .ax{stroke:#c3c2b7}
+.callout{margin-top:12px;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start}
+.callout b{font:800 44px/.9 "Sofia Sans Condensed",sans-serif;color:var(--acc2);white-space:nowrap;padding-top:2px}
+.callout span{font-size:14px;color:var(--ink);line-height:1.4}
+.legend{display:flex;gap:16px;font-size:12px;color:var(--mute);margin-top:6px}.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.take{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.tk{background:var(--ink);color:#fff;border-radius:18px;padding:20px 22px;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start}
+.tk i{font:800 34px/1 "Sofia Sans Condensed",sans-serif;color:var(--sun);font-style:normal}
+.tk h3{font-size:22px;margin-bottom:6px}.tk p{font-size:14px;color:#cfe0e0}
+.foot{margin-top:28px;display:flex;justify-content:space-between;gap:20px;font-size:12px;color:var(--mute);border-top:1px solid var(--line);padding-top:14px}
+.foot b{color:var(--ink)}
+.sun{position:absolute;right:-60px;top:-60px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,var(--sun) 0 36%,transparent 37%);opacity:.9}
+@media(max-width:1240px){.wrap{padding:0 0 40px}.poster{transform-origin:top left}}
+</style>
+</head>
+<body>
+<div class="bar"><a href="index.html#insight">← Kembali ke portal</a><a class="pri" id="dl" href="assets/infografis.png" download="infografis-rote-ndao-sabu-raijua.png">Unduh PNG</a><a href="index.html#beban">Lihat data lengkap</a></div>
+<div class="wrap"><div class="poster" id="poster">
+<div class="sun"></div>
+<div class="head"><div><span class="badge">Pre-FS PLTS + BESS · Nusa Tenggara Timur · 2026</span>
+ <h1 style="margin-top:14px">Empat sistem pulau,<br><span>satu arah: lebih sedikit solar</span></h1>
+ <p class="lead">Rote, Ndao, Sabu, dan Raijua masih bergantung pada PLTD. Beban puncaknya jatuh pukul 18–19, sementara matahari ada pukul 06–18. Celah itulah yang harus ditutup PLTS dan baterai.</p></div>
+ <div class="map" id="map"></div></div>
+<div class="row" id="row"></div>
+<div class="two">
+ <div class="panel"><div class="hd"><h3>Ndao: beban malam, bukan siang</h3><span>rata-rata per jam, Jan–Okt 2026</span></div><div class="chart" id="c1"></div><div class="callout" id="k1"></div></div>
+ <div class="panel"><div class="hd"><h3>Raijua: PLTS mendesak diesel</h3><span id="rjsub"></span></div><div class="chart" id="c2"></div><div class="callout" id="k2"></div></div>
+</div>
+<div class="take" id="take"></div>
+<div class="foot"><span>Sumber: PT PLN (Persero) UIW NTT, UP3 Kupang, ULP Rote Ndao, ULP Sabu Raijua · SLD Jun & Okt 2026 · langgam beban Jan–Okt 2026 · data mesin Nov 2026. Beban puncak Rote dan Sabu belum diverifikasi logsheet.</span><span><b>rotesabu.vercel.app</b></span></div>
+</div></div>
+<script src="data.js"></script>
+<script>
+{
+const D=window.DATA,$=s=>document.querySelector(s),f=(v,d=0)=>Number(v).toLocaleString('id-ID',{maximumFractionDigits:d,minimumFractionDigits:d}),SUS=300,H=i=>String(i+1).padStart(2,'0')+'.00';
+const cap=k=>{const r=D.mesin[k],t=r.reduce((a,x)=>a+x.dmp,0),mx=Math.max(...r.map(x=>x.dmp));return {dmp:t,n1:t-mx,dt:r.reduce((a,x)=>a+x.dt,0)}};
+const C={ndao:cap('ndao'),raijua:cap('raijua'),seba:cap('seba')};
+// Ndao: kurva rata-rata 10 bulan
+const avg=Array(24).fill(0),cnt=Array(24).fill(0);let ndPeak=0,ndE=0,nM=0;
+for(const m of D.ndao){const n=m.ndays;let daily=[];for(let d=0;d<n;d++){let s=0;for(let h=0;h<24;h++){const v=m.grid[h][d];if(v>0&&v<=SUS){avg[h]+=v;cnt[h]++;s+=v;if(v>ndPeak)ndPeak=v}}if(s>0)daily.push(s)}ndE+=daily.reduce((a,b)=>a+b,0)/daily.length;nM++}
+for(let h=0;h<24;h++)avg[h]=cnt[h]?avg[h]/cnt[h]:0;ndE/=nM;
+const share=avg.slice(8,17).reduce((a,b)=>a+b,0)/avg.reduce((a,b)=>a+b,0),day=avg.slice(9,16).reduce((a,b)=>a+b,0)/7,night=avg.slice(18,22).reduce((a,b)=>a+b,0)/4;
+// Raijua: bulan puncak tertinggi
+const rm=D.raijua.reduce((b,m)=>m.peak>b.peak?m:b,D.raijua[0]),rT=rm.rows.map(r=>r[9]),rP=rm.rows.map(r=>r[8]),rPeak=Math.max(...rT),rMid=rm.rows.slice(9,16),midPv=rMid.reduce((a,r)=>a+r[8],0)/rMid.reduce((a,r)=>a+r[8]+r[9],0),pvE=rP.reduce((a,b)=>a+b,0),dE=rT.reduce((a,b)=>a+b,0);
+const SYS=[
+ {n:'Rote',tag:'Sistem besar · RFP 1773',cap:9000,peak:8500,pv:'180 kWp tersambung (2% beban puncak)',note:'PLTD BGP 9 MW · ±300 gardu · GH Ba\'a & Onatali'},
+ {n:'Ndao',tag:'Pulau kecil · RFP 1773',cap:C.ndao.dmp,peak:ndPeak,pv:'belum ada PLTS · lahan tersedia',note:`5 mesin · terpasang ${f(C.ndao.dt)} kW · N-1 ${f(C.ndao.n1)} kW`,n1:C.ndao.n1},
+ {n:'Sabu',tag:'Sistem besar · RFP 1772',cap:C.seba.dmp,peak:4200,pv:'Eilode 1,4 MWp tanpa baterai + 6 unit diesel sewa',note:`13 mesin · terpasang ${f(C.seba.dt)} kW · 5 penyulang`},
+ {n:'Raijua',tag:'Pulau kecil · di luar RFP',w:true,cap:C.raijua.dmp,peak:rPeak,pv:`PLTS memasok sejak Jul 2026, s.d. ${f(Math.max(...D.raijua.flatMap(m=>m.rows.map(r=>r[8]))))} kW`,note:`6 mesin · terpasang ${f(C.raijua.dt)} kW · N-1 ${f(C.raijua.n1)} kW`,n1:C.raijua.n1}];
+$('#row').innerHTML=SYS.map(s=>{const mx=Math.max(s.cap,s.peak)*1.04,gap=s.cap-s.peak,n1=s.n1!=null&&s.n1<s.peak;
+ return `<div class="sys"><div class="t"><h2>${s.n}</h2><span class="tag${s.w?' w':''}">${s.tag}</span></div>
+ <div class="big">${f(s.peak)}<small> kW</small></div><div class="sub">beban puncak tercatat</div>
+ <div class="meter"><div><span>Mampu</span><s style="width:${s.cap/mx*100}%"></s><em>${f(s.cap)}</em></div><div><span>Puncak</span><s class="pk" style="width:${s.peak/mx*100}%"></s><em>${f(s.peak)}</em></div></div>
+ <div class="stat ${gap<0||n1?'w':'ok'}">${gap<0?`Defisit ${f(-gap)} kW, ditutup diesel sewa + PLTS`:n1?`Cadangan ${f(gap)} kW, tetapi N-1 tidak terpenuhi`:`Cadangan ${f(gap)} kW (${f(gap/s.cap*100)}%)`}</div>
+ <div class="pv"><b>PLTS:</b> ${s.pv}</div><div class="pv">${s.note}</div></div>`}).join('');
+// peta
+$('#map').innerHTML=`<svg viewBox="0 0 840 390" aria-hidden="true">
+ <polygon fill="#5a8a8f" points="900,-120 795,0 726,39 690,51 726,75 684,96 654,120 648,147 690,153 750,135 900,80"/>
+ <path d="M682,98 L640,128 Q600,170 528,258" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="3 9" opacity=".7"/><path d="M682,98 L640,128 Q420,110 162,190" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="3 9" opacity=".7"/>
+ <polygon fill="var(--land)" stroke="var(--land)" stroke-width="6" stroke-linejoin="round" points="636,180 615,186 590,205 560,225 535,243 505,275 480,295 462,312 465,326 485,330 510,318 540,300 570,280 600,255 625,225 640,198"/>
+ <ellipse fill="var(--land)" cx="414" cy="291" rx="8" ry="6"/><ellipse fill="var(--land)" cx="174" cy="204" rx="40" ry="19" transform="rotate(-14 174 204)"/><ellipse fill="var(--land)" cx="90" cy="231" rx="12" ry="7"/>
+ <circle cx="684" cy="96" r="6" fill="#fff"/><text x="700" y="100" fill="#fff" font-size="13" font-family="Instrument Sans">Kupang</text>
+ ${[[570,250],[414,291],[174,204],[90,231]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="7" fill="var(--acc)" stroke="#fff" stroke-width="3"/>`).join('')}</svg>
+ <span class="lab" style="left:72%;top:52%">Rote</span><span class="lab" style="left:49%;top:84%">Ndao</span><span class="lab" style="left:21%;top:40%">Sabu</span><span class="lab" style="left:11%;top:72%">Raijua</span>`;
+// chart 1: kurva Ndao
+{const W=520,Hh=230,L=40,R=10,T=14,B=28,mx=Math.max(...avg)*1.12,x=h=>L+h/23*(W-L-R),y=v=>T+(Hh-T-B)-v/mx*(Hh-T-B);
+ const area=`M${x(0)},${y(0)} `+avg.map((v,h)=>`L${x(h)},${y(v)}`).join(' ')+` L${x(23)},${y(0)} Z`;
+ $('#c1').innerHTML=`<svg viewBox="0 0 ${W} ${Hh}"><rect x="${x(5.5)}" y="${T}" width="${x(17.5)-x(5.5)}" height="${Hh-T-B}" fill="var(--sun)" opacity=".18"/>
+ ${[50,100,150].map(t=>`<line class="gl" x1="${L}" x2="${W-R}" y1="${y(t)}" y2="${y(t)}"/><text x="${L-6}" y="${y(t)+4}" text-anchor="end">${t}</text>`).join('')}
+ <path d="${area}" fill="var(--sea)" opacity=".15"/><polyline fill="none" stroke="var(--sea)" stroke-width="3" stroke-linejoin="round" points="${avg.map((v,h)=>`${x(h)},${y(v)}`).join(' ')}"/>
+ <text x="${x(6)+6}" y="${y(0)-8}" style="fill:#8a6a00;font-weight:600">jam matahari 06–18</text>
+ <circle cx="${x(18)}" cy="${y(avg[18])}" r="5" fill="var(--acc)"/><text x="${x(18)-8}" y="${y(avg[18])-10}" text-anchor="end" style="fill:var(--ink);font-weight:700">puncak ${f(avg[18])} kW · 19.00</text>
+ ${[0,6,12,18,23].map(h=>`<text x="${x(h)}" y="${Hh-8}" text-anchor="middle">${H(h)}</text>`).join('')}<line class="ax" x1="${L}" x2="${W-R}" y1="${y(0)}" y2="${y(0)}"/></svg>`;
+ $('#k1').innerHTML=`<b>${f(share*100)}%</b><span>energi harian jatuh pada jam 09–17. Siang rata-rata ${f(day)} kW, malam ${f(night)} kW. PLTS tanpa baterai mentok di porsi EBT ±25–30%; di atas itu wajib BESS.</span>`}
+// chart 2: Raijua hari puncak, diesel vs PLTS
+{const W=520,Hh=230,L=40,R=10,T=14,B=28,n=24,bw=(W-L-R)/n,mx=Math.max(...rT.map((v,i)=>v+rP[i]))*1.12,y=v=>T+(Hh-T-B)-v/mx*(Hh-T-B);
+ $('#rjsub').textContent=`hari puncak bulanan, ${rm.tanggal.replace(/\s+/g,' ').toLowerCase()}`;
+ $('#c2').innerHTML=`<svg viewBox="0 0 ${W} ${Hh}">${[100,200,300].map(t=>`<line class="gl" x1="${L}" x2="${W-R}" y1="${y(t)}" y2="${y(t)}"/><text x="${L-6}" y="${y(t)+4}" text-anchor="end">${t}</text>`).join('')}
+ ${rT.map((v,h)=>{const x=L+h*bw+2,w=bw-4;return `<rect x="${x}" y="${y(v)}" width="${w}" height="${y(0)-y(v)}" fill="var(--sea)" rx="2"/>${rP[h]?`<rect x="${x}" y="${y(v+rP[h])}" width="${w}" height="${y(v)-y(v+rP[h])-2}" fill="var(--s4)" rx="2"/>`:''}`}).join('')}
+ <line class="gl" x1="${L}" x2="${W-R}" y1="${y(C.raijua.n1)}" y2="${y(C.raijua.n1)}" stroke="var(--warn)" stroke-dasharray="4 4"/><text x="${L+4}" y="${y(C.raijua.n1)-5}" style="fill:var(--warn);font-weight:700">N-1 = ${f(C.raijua.n1)} kW</text>
+ ${[0,6,12,18,23].map(h=>`<text x="${L+h*bw+bw/2}" y="${Hh-8}" text-anchor="middle">${H(h)}</text>`).join('')}<line class="ax" x1="${L}" x2="${W-R}" y1="${y(0)}" y2="${y(0)}"/></svg>
+ <div class="legend"><span><i style="background:var(--sea)"></i>Diesel</span><span><i style="background:var(--s4)"></i>PLTS</span><span><i style="background:var(--warn);height:3px"></i>batas N-1</span></div>`;
+ $('#k2').innerHTML=`<b>${f(midPv*100)}%</b><span>beban tengah hari sudah dipikul PLTS; beban diesel turun sampai ${f(Math.min(...rT.filter(v=>v>0)))} kW. Puncak ${f(rPeak)} kW pukul 19.00 melampaui N-1. Tambahan PLTS berikutnya hanya berguna bersama baterai.</span>`}
+$('#take').innerHTML=[
+ ['1','Pulau kecil: baterai dulu, bukan sekadar panel',`Ndao dan Raijua sama-sama gagal N-1 di jam puncak. BESS grid-forming memberi cadangan putar sekaligus menggeser energi surya ke malam. Base case: Ndao 300 kWp + 600 kWh, Raijua 400 kWp + 600 kWh.`],
+ ['2','Sistem besar: ganti yang paling mahal lebih dulu',`Sabu defisit ${f(4200-C.seba.dmp)} kW dan membayar diesel sewa; BESS di Eilode adalah opsi dengan payback tercepat. Rote 8,5 MW dengan PLTS 2% adalah penghemat BBM terbesar per kWp.`],
+ ['3','Data yang menentukan hasil',`Masih ditunggu: langgam beban Rote dan Sabu per penyulang, data mesin dan BBM PLTD BGP, produksi harian PLTS Eilode. Tanpa itu, sizing sistem besar tetap berupa rentang.`]].map(([i,t,p])=>`<div class="tk"><i>${i}</i><div><h3>${t}</h3><p>${p}</p></div></div>`).join('');
+// skala poster di layar sempit
+const fit=()=>{const w=innerWidth-32,p=$('#poster');if(w<1200){const k=w/1200;p.style.transform=`scale(${k})`;p.parentElement.style.height=(p.offsetHeight*k+16)+'px'}else{p.style.transform='';p.parentElement.style.height=''}};
+addEventListener('resize',fit);fit();
+}
+</script>
+</body>
+</html>
