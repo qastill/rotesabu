@@ -166,7 +166,7 @@ const f=(v,d=0)=>Number(v).toLocaleString('id-ID',{maximumFractionDigits:d,minim
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const VIEWS=[['ringkasan','Ringkasan'],['sistem','Sistem & Pembangkit'],['beban','Langgam Beban'],['sld','Single Line Diagram'],['sumber','Data & Sumber']];
 const SUS=300;
-const XLS=location.hostname.endsWith('claude.ai')?'https://github.com/qastill/rotesabu/raw/claude/sweet-volta-hcba6j/site/data/':'data/'; // Excel tidak bisa dihosting di artifact, ambil dari GitHub // kW: batas nilai Ndao yang dianggap anomali (DMP hanya 280 kW)
+const XLS=location.hostname.endsWith('claude.ai')?'https://github.com/qastill/rotesabu/raw/claude/sweet-volta-hcba6j/data/':'data/'; // Excel tidak bisa dihosting di artifact, ambil dari GitHub // kW: batas nilai Ndao yang dianggap anomali (DMP hanya 280 kW)
 
 /* ---------- fakta sistem (dari SLD + data mesin) ---------- */
 const SYS=[
