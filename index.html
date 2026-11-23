@@ -424,11 +424,6 @@ function vInsight(){const nd=D.ndao.map(ndaoStats),N=nd.length;const E=nd.reduce
    'Kaji FGD di Ba\'a bersama Pemkab untuk memvalidasi proyeksi beban dari pariwisata, perikanan, dan rumput laut sesuai Sec. 2.1 poin 2.'])}
  </div></section>
  <section class="sec grid g2">
-  <div class="card"><h3>Lingkup dan jadwal menurut RFP</h3><div class="twrap" style="margin-top:8px"><table><thead><tr><th>RFP</th><th>Pulau</th><th class="r">Anggaran maks</th><th>Catatan</th></tr></thead><tbody>
-   <tr><td>1773/IESR/X/DIR-CJET/CJET/2026</td><td>Rote + Ndao</td><td class="r">Rp 500 juta</td><td>Dua sistem terpisah, FGD di Ba'a</td></tr>
-   <tr><td>1772/IESR/X/DIR-CJET/CJET/2026</td><td>Sabu</td><td class="r">Rp 300 juta</td><td>Raijua tidak disebut; bisa diusulkan sebagai site tambahan</td></tr></tbody>
-   <tfoot><tr><td colspan="4">Keduanya: November 2026 – April 2027, anggaran termasuk pajak, output menjadi milik IESR, pihak ketiga wajib diungkap dan disetujui (Sec. 2.5, 3.1).</td></tr></tfoot></table></div>
-   <h4 style="margin-top:14px">Deliverable</h4><ul class="clean small" style="margin-top:6px"><li><b>D1</b> Inception report, minggu ke-4 November 2026</li><li><b>D2</b> Baseline dan laporan pengumpulan data, minggu ke-4 Januari 2027</li><li><b>D3</b> Laporan antara: resource, site, opsi teknis, minggu ke-4 Maret 2027</li><li><b>D4</b> Laporan akhir, serah terima data/model, transfer pengetahuan, minggu ke-4 April 2027</li></ul></div>
   <div class="card"><h3>Prioritas 30 hari ke depan</h3><div class="steps" style="margin-top:8px">
    <div><i>1</i><span>Kirim inception report D1: metodologi, daftar data, asumsi, dan usulan tertulis soal Raijua.</span></div>
    <div><i>2</i><span>Ungkapkan anggota tim GIS ke IESR lewat email resmi (nama, lingkup, man-day) dan minta persetujuan.</span></div>
@@ -436,7 +431,9 @@ function vInsight(){const nd=D.ndao.map(ndaoStats),N=nd.length;const E=nd.reduce
    <div><i>4</i><span>Bersihkan langgam Ndao (anomali Maret, puncak dini hari) dan bangun profil 8.760 jam untuk HOMER.</span></div>
    <div><i>5</i><span>Jadwalkan kunjungan lapangan Desember–Januari: Ba'a, Ndao, Seba; survei lahan dengan koordinat dan foto.</span></div>
    <div><i>6</i><span>Siapkan kerangka model keuangan (LCOE, NPV, IRR, payback) dan metodologi GHG agar siap diisi saat data BBM datang.</span></div></div>
-   <h4 style="margin-top:14px">Risiko utama</h4><ul class="clean small" style="margin-top:6px"><li>Data PLN terlambat: mitigasi dengan proxy yang dinyatakan terbuka (Sec. 2.5 Data Transparency).</li><li>Lingkup melebar ke Raijua tanpa anggaran: putuskan di inception, tertulis.</li><li>Puncak Sabu dan Rote belum terverifikasi: semua sizing sistem besar diberi rentang, bukan angka tunggal.</li></ul></div>
+</div>
+  <div class="card"><h3>Risiko utama dan mitigasinya</h3><ul class="clean" style="margin-top:8px"><li><b>Data PLN terlambat.</b> Pakai proxy yang dinyatakan terbuka beserta tingkat keyakinannya; jangan menunggu data sempurna untuk D2.</li><li><b>Lingkup melebar ke Raijua.</b> Putuskan tertulis di inception: dikerjakan ringan, atau menjadi usulan kerja lanjutan.</li><li><b>Puncak Sabu dan Rote belum terverifikasi.</b> Semua sizing sistem besar diberi rentang, bukan angka tunggal, sampai langgam beban diterima.</li><li><b>Kualitas logsheet.</b> Anomali Maret dan puncak dini hari Ndao dibersihkan dengan aturan yang didokumentasikan, bukan dihapus diam-diam.</li></ul>
+   <p class="note" style="margin-top:12px">Versi visual satu halaman dari insight ini tersedia di <a href="infografis.html">halaman infografis</a>, termasuk PNG untuk dibagikan.</p></div>
  </section>`}
 
 /* ---------- SLD ---------- */
@@ -476,7 +473,7 @@ function vSumber(){const F=[['pdf','SLD-Rote-Ndao-Jun-2026.pdf','Single Line ULP
 /* ---------- router & events ---------- */
 const VF={ringkasan:vRingkasan,insight:vInsight,sistem:vSistem,beban:vBeban,sld:vSld,sumber:vSumber};
 function route(){const v=location.hash.slice(1).split('?')[0];return VIEWS.some(x=>x[0]===v)?v:'ringkasan'}
-function render(){const v=route();$('#nav').innerHTML=VIEWS.map(([k,l])=>`<a href="#${k}"${k===v?' aria-current="page"':''}>${l}</a>`).join('');
+function render(){const v=route();$('#nav').innerHTML=VIEWS.map(([k,l])=>`<a href="#${k}"${k===v?' aria-current="page"':''}>${l}</a>`).join('')+'<a href="infografis.html">Infografis</a>';
  const app=$('#app');app.innerHTML=`<div class="view on">${VF[v]()}</div>`;document.title=(v==='ringkasan'?'':VIEWS.find(x=>x[0]===v)[1]+' · ')+'Data Sistem Rote Ndao & Sabu Raijua';
  app.querySelectorAll('.chart').forEach(ch=>{const t=tipInit(ch);
   ch.addEventListener('pointermove',e=>{const h=e.target.closest('[data-tip]');if(h){showTip(t,ch,e.clientX,e.clientY,h.dataset.tip)}else if(!e.target.closest('[data-curve-hit]'))hideTip(t)});
