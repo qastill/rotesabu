@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Monitoring Pre-FS NTT</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Sofia+Sans+Condensed:wght@700;800&display=swap" rel="stylesheet">
+<style>
+/* VOICE: ruang kendali proyek yang ramah — sekali lihat tahu posisi pekerjaan
+   IDEA: peta laut pulau-pulau selatan NTT; kapal BBM dari Kupang, matahari di atas Laut Sawu
+   PICTURE: peta skematik Rote, Ndao, Sabu, Raijua dengan jalur kapal bergerak, jadi pintu ke tiap sistem
+   COLOUR and TYPE: laut teal, pulau pasir, jingga matahari; Sofia Sans Condensed 800 + Instrument Sans
+   LAYOUT: satu layar tanpa gulir — bilah atas (proyek + menu), lalu panel-panel yang mengisi tinggi layar */
+:root{color-scheme:light dark;--bg:light-dark(#f4f2ea,#0a1618);--card:light-dark(#fff,#11242a);--ink:light-dark(#122a30,#e8f1ef);--mute:light-dark(#5b7075,#94aaab);--line:light-dark(#dde2da,#22393f);--soft:light-dark(#eef0e8,#172e34);--sea:light-dark(#0f6577,#0b3d49);--sea2:light-dark(#0c5566,#093540);--land:light-dark(#f6e7b4,#e6d6a0);--acc:#ff5a1f;--acc2:light-dark(#c63c0a,#ff8a5c);--ok:light-dark(#178f64,#3ccf97);--sun:#ffc53d}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 "Instrument Sans",system-ui,sans-serif;display:grid;grid-template-rows:auto minmax(0,1fr);height:100dvh;overflow:hidden}
+h1,h2,h3,.num{font-family:"Sofia Sans Condensed","Arial Narrow",sans-serif;font-weight:800;line-height:1.05;margin:0}
+h2{font-size:22px}h3{font-size:19px}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding:10px 14px;background:var(--card);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px}.brand h1{font-size:24px;white-space:nowrap}
+.logo{width:34px;height:34px;flex:none}
+.seg{display:flex;background:var(--soft);border-radius:99px;padding:3px}
+.seg a{padding:7px 14px;border-radius:99px;text-decoration:none;color:var(--mute);font-weight:600;white-space:nowrap}
+.seg a[aria-current]{background:var(--sea);color:#fff}
+nav{display:flex;gap:2px;margin-left:auto;overflow-x:auto;scrollbar-width:none}
+nav a{flex:none;display:flex;align-items:center;gap:6px;padding:8px 11px;border-radius:10px;text-decoration:none;color:var(--mute);font-weight:600}
+nav a svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linejoin:round;stroke-linecap:round}
+nav a[aria-current]{background:var(--ink);color:var(--card)}
+nav a:hover:not([aria-current]),.seg a:hover:not([aria-current]){color:var(--ink)}
+a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.sync{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--mute);white-space:nowrap}.dot{width:9px;height:9px;border-radius:50%;background:var(--mute)}.dot.on{background:var(--ok);animation:blink 2.4s infinite}
+main{padding:12px;min-height:0;display:grid}
+.view{display:grid;gap:12px;min-height:0;height:100%}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;min-height:0;overflow:auto;scrollbar-width:thin}
+.col{display:grid;gap:12px;min-height:0}
+.hd{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.mute{color:var(--mute);font-size:13px}.late{color:var(--acc2);font-weight:600}
+/* peta */
+.v-peta{grid-template-columns:minmax(0,1.55fr) minmax(0,1fr)}
+.v-peta .l{grid-template-rows:minmax(0,1fr) auto}
+.mapcard{padding:0;overflow:hidden!important;background:var(--sea);border-color:var(--sea2);container-type:size;display:grid;place-items:center;min-height:170px}
+.map{position:relative;width:min(100cqw,100cqh*2.154);aspect-ratio:840/390}
+.map svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.land{fill:var(--land);stroke:var(--land);stroke-width:6;stroke-linejoin:round}.dim{opacity:.45}
+.timor{fill:color-mix(in srgb,var(--land) 55%,var(--sea));stroke:none}
+.route{fill:none;stroke:#fff;stroke-width:2;stroke-dasharray:3 9;stroke-linecap:round;opacity:.75;animation:dash 1.6s linear infinite}
+.route.s{stroke-width:1.5;opacity:.5}
+.pulse{fill:none;stroke:var(--acc);stroke-width:3;transform-box:fill-box;transform-origin:center;animation:pulse 2s ease-out infinite}
+.rays{transform-box:fill-box;transform-origin:center;animation:spin 24s linear infinite}
+.wave{fill:none;stroke:#fff;opacity:.13;stroke-width:2;stroke-linecap:round}
+.chip{position:absolute;transform:translate(-50%,-50%);border:2px solid transparent;background:var(--card);color:var(--ink);border-radius:12px;padding:.3em .7em;font:inherit;font-size:clamp(10px,1.75cqw,13px);line-height:1.2;cursor:pointer;text-align:left;box-shadow:0 3px 10px rgb(0 0 0/.25);white-space:nowrap}
+.chip b{display:block;font:800 1.3em/1 "Sofia Sans Condensed",sans-serif}.chip.on{border-color:var(--acc)}.chip.off{opacity:.7}
+.mlab{position:absolute;transform:translate(-50%,-50%);color:#fff;font-size:12px;opacity:.8;white-space:nowrap;pointer-events:none}.mlab.i{font-style:italic;opacity:.55;font-size:14px}
+.rings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.ring{position:relative;text-align:center;font-size:13px;color:var(--mute)}.ring svg{width:76px;height:76px;transform:rotate(-90deg);display:block;margin:0 auto}
+.ring b{position:absolute;left:0;right:0;top:0;height:76px;line-height:76px;font:800 22px/76px "Sofia Sans Condensed",sans-serif;color:var(--ink)}
+.rt{fill:none;stroke:var(--soft);stroke-width:8}.rv{fill:none;stroke-width:8;stroke-linecap:round}
+.next{display:flex;align-items:center;gap:10px;background:var(--ink);color:var(--card);border-radius:12px;padding:9px 12px;margin-top:10px}
+.next .num{font-size:26px;color:var(--sun);flex:none}.next small{display:block;opacity:.75;font-size:12px}
+.up{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:6px 14px}
+.up li{display:flex;gap:8px;align-items:baseline;font-size:14px}.up i{font-style:normal;flex:none;font-size:12px;font-weight:700;padding:2px 7px;border-radius:99px;background:var(--soft);white-space:nowrap}.up i.late{background:var(--acc);color:#fff}
+/* sistem */
+.tag{font:600 12px/1 "Instrument Sans",sans-serif;padding:5px 8px;border-radius:99px;background:var(--soft);color:var(--mute);white-space:nowrap}
+.meter div{display:grid;grid-template-columns:7.5em minmax(0,1fr) auto;gap:8px;align-items:center;font-size:13px;margin:5px 0}
+.meter s,.dn s{display:block;height:12px;border-radius:99px;background:var(--sea);text-decoration:none;transform-origin:left}.meter s.pk{background:var(--acc)}.meter s.n1{opacity:.4}
+.meter em,.dn em{font-style:normal;white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:600}
+.dn{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:6px 8px;align-items:center;font-size:13px;margin:10px 0;padding:10px;border-radius:12px;background:var(--soft)}
+.dn svg{width:20px;height:20px}.dn s.d{background:var(--sun)}.dn s.n{background:var(--ink)}
+.facts{display:grid;grid-template-columns:minmax(0,6.5em) minmax(0,1fr);gap:3px 10px;margin:10px 0 0;font-size:13.5px}.facts dt{color:var(--mute)}.facts dd{margin:0}
+.warn{font-size:13px;margin:10px 0 0;padding:8px 10px;border-left:3px solid var(--acc);background:color-mix(in srgb,var(--acc) 9%,transparent);border-radius:0 8px 8px 0}
+.v-sistem{grid-template-columns:repeat(2,minmax(0,1fr))}
+.opts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
+.opt{border:1px solid var(--line);border-radius:12px;padding:8px 6px;text-align:center;font-size:12.5px}.opt .ring svg{width:64px;height:64px}.opt .ring b{height:64px;line-height:64px;font-size:19px}
+.opt p{margin:4px 0 0}.opt strong{display:block;font-size:13.5px}
+.steps{display:grid;gap:8px;margin-top:12px;counter-reset:s}
+.steps div{display:flex;gap:10px;align-items:center;padding:9px 12px;border-radius:12px;background:var(--soft);font-size:14px}
+.steps div::before{counter-increment:s;content:counter(s);flex:none;width:26px;height:26px;border-radius:50%;background:var(--sea);color:#fff;display:grid;place-items:center;font-weight:700}
+/* jadwal */
+.v-jadwal{grid-template-rows:minmax(0,1fr) auto}
+.v-jadwal>.card{display:grid;grid-template-rows:auto minmax(0,1fr)}.gantt{--lab:270px;position:relative;display:grid;grid-auto-rows:minmax(26px,46px);align-content:space-evenly}
+.grow{display:grid;grid-template-columns:var(--lab) minmax(0,1fr);gap:10px;align-items:center}
+.grow .lab{font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.track{position:relative;height:100%}
+.bar{position:absolute;top:calc(50% - 7px);height:14px;border-radius:99px;background:var(--sea);transform-origin:left}.bar.past{background:var(--ok)}.bar.fgd{background:var(--sun)}
+.months{position:relative;height:20px;font-size:12px;color:var(--mute)}.months span{position:absolute}
+.gl{position:absolute;top:0;bottom:0;border-left:1px dashed var(--line)}
+.gov{position:absolute;top:20px;bottom:0;left:calc(var(--lab) + 10px);right:0;pointer-events:none}
+.today{position:absolute;top:0;bottom:26px;border-left:2px solid var(--acc)}.today b{position:absolute;top:-19px;left:-26px;font-size:11px;background:var(--acc);color:#fff;padding:1px 6px;border-radius:99px;white-space:nowrap}
+.ms{position:absolute;bottom:0;transform:translateX(-50%);font:800 13px/1 "Sofia Sans Condensed",sans-serif;background:var(--ink);color:var(--card);padding:4px 7px;border-radius:6px}.ms.done{background:var(--ok);color:#fff}
+.dels{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.del{border:1px solid var(--line);border-radius:14px;padding:10px 12px;background:var(--card);display:grid;gap:5px;font-size:13px}
+.del .num{font-size:26px}.del.selesai{border-color:var(--ok)}.del.selesai .num{color:var(--ok)}.del.cur{border-color:var(--acc)}.del.cur .num{color:var(--acc)}
+/* kanban */
+.v-kerja,.v-data,.v-catatan{grid-template-rows:auto minmax(0,1fr)}
+.bar2{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.fchip{min-height:36px;padding:0 13px;border-radius:99px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;font:inherit;font-weight:600}
+.fchip[aria-pressed=true]{background:var(--ink);color:var(--card);border-color:var(--ink)}
+.kb{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;min-height:0}
+.kcol{background:var(--soft);border-radius:16px;padding:10px;display:grid;grid-template-rows:auto minmax(0,1fr);min-height:0}
+.kcol h3{display:flex;justify-content:space-between;align-items:center;margin:2px 4px 8px}.kcol h3 span{font:600 13px "Instrument Sans",sans-serif;background:var(--card);border-radius:99px;padding:2px 9px}
+.klist{overflow:auto;display:grid;gap:8px;align-content:start;scrollbar-width:thin}
+.kc{background:var(--card);border-radius:12px;padding:9px 10px;border:1px solid var(--line);border-left:4px solid var(--line);display:grid;gap:6px}
+.kc.jalan{border-left-color:var(--acc)}.kc.blok{border-left-color:var(--acc);background:repeating-linear-gradient(135deg,var(--card) 0 8px,color-mix(in srgb,var(--acc) 9%,var(--card)) 8px 16px)}.kc.selesai{border-left-color:var(--ok);opacity:.8}
+.kt{all:unset;cursor:pointer;font-size:14px;line-height:1.3;font-weight:500}.kt:hover{text-decoration:underline}
+.km{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--mute)}
+.av{width:22px;height:22px;border-radius:50%;background:var(--sea);color:#fff;display:grid;place-items:center;font-size:11px;font-weight:700;flex:none}
+.go{margin-left:auto;min-height:30px;padding:0 11px;border-radius:99px;border:0;background:var(--ink);color:var(--card);font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}.go.ok{background:var(--ok);color:#fff}
+/* data */
+.v-data .body{display:grid;grid-template-columns:minmax(0,240px) minmax(0,1fr);gap:12px;min-height:0}
+.donut{position:relative;width:160px;margin:4px auto 10px}.donut svg{transform:rotate(-90deg);display:block}.donut b{position:absolute;inset:0;display:grid;place-items:center;font:800 34px "Sofia Sans Condensed",sans-serif}
+.leg{display:grid;gap:5px;font-size:13.5px}.leg span{display:flex;align-items:center;gap:8px}.leg i{width:12px;height:12px;border-radius:4px;flex:none}.leg em{margin-left:auto;font-style:normal;font-weight:700}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr));gap:8px;align-content:start}
+.tile{border:1px solid var(--line);border-left:5px solid var(--line);border-radius:12px;padding:9px 10px;display:grid;gap:6px;align-content:space-between}
+.tile.selesai{border-left-color:var(--ok)}.tile.part{border-left-color:var(--sun)}.tile.jalan{border-left-color:var(--acc)}.tile.blok{border-left-color:var(--ink)}
+select.st{min-height:32px;border-radius:8px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);padding:0 6px;font:inherit;font-size:13px;font-weight:600;max-width:100%}
+/* catatan */
+.v-catatan{grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);grid-template-rows:minmax(0,1fr)}
+textarea{width:100%;min-height:120px;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--card);color:var(--ink);font:inherit;font-size:16px}
+.log{list-style:none;margin:0;padding:0}.log li{padding:10px 0;border-bottom:1px solid var(--line)}
+.btn{color:var(--ink);min-height:40px;padding:0 15px;border-radius:10px;border:1.5px solid var(--ink);background:var(--card);cursor:pointer;font:inherit;font-weight:600}
+.btn.pri{background:var(--acc);border-color:var(--acc);color:#fff}.btn.ghost{border-color:var(--line)}.btn:disabled,.go:disabled{opacity:.45;cursor:not-allowed}
+.empty{padding:16px;border:1.5px dashed var(--line);border-radius:12px;color:var(--mute);text-align:center;font-size:14px}
+.banner{position:fixed;left:12px;bottom:12px;max-width:420px;background:var(--ink);color:var(--card);padding:10px 14px;border-radius:12px;font-size:13.5px;z-index:5}
+.modal{position:fixed;inset:0;background:rgb(0 0 0/.45);display:none;align-items:center;justify-content:center;padding:16px;z-index:9}.modal.open{display:flex}
+.dlg{background:var(--card);border-radius:16px;padding:20px;width:min(540px,100%);max-height:92vh;overflow:auto}
+.dlg label{display:block;font-size:13px;font-weight:600;margin:10px 0 4px}
+.dlg input,.dlg select,.dlg textarea{width:100%;min-height:44px;border:1.5px solid var(--line);border-radius:10px;padding:8px 12px;background:var(--card);color:var(--ink);font:inherit;font-size:16px}
+.row2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px}
+.acts{display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap;margin-top:16px}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--card);padding:10px 16px;border-radius:10px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:10}.toast.on{opacity:1}
+@keyframes dash{to{stroke-dashoffset:-24}}@keyframes pulse{from{transform:scale(.5);opacity:1}to{transform:scale(2.2);opacity:0}}@keyframes spin{to{transform:rotate(360deg)}}@keyframes blink{50%{opacity:.4}}
+@keyframes grow{from{transform:scaleX(0)}}@keyframes ringin{from{stroke-dasharray:0 999}}@keyframes fade{from{opacity:0;transform:translateY(8px)}}
+.anim .view{animation:fade .35s ease-out}.anim .rv{animation:ringin .9s ease-out}.anim .bar,.anim .meter s,.anim .dn s{animation:grow .7s ease-out backwards}.anim .kc,.anim .tile{animation:fade .35s ease-out backwards}
+@media(prefers-reduced-motion:reduce){*,.anim *{animation:none!important}}
+@media(max-width:680px),(max-height:520px){html,body{height:auto}body{display:block;height:auto;overflow:auto}.view{height:auto;grid-template-columns:minmax(0,1fr)!important;grid-template-rows:none!important}.card,.klist{overflow:visible}.mapcard{aspect-ratio:840/390;min-height:0}.kb,.dels,.v-data .body{grid-template-columns:minmax(0,1fr)}.gantt{--lab:120px}.chip{font-size:10px}nav{margin-left:0;width:100%}.brand h1{font-size:20px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><svg class="logo" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="17" fill="var(--sea)"/><circle cx="17" cy="14" r="6" fill="var(--sun)"/><path d="M4 22q4-4 8 0t8 0 10 0v12H4z" fill="var(--land)"/></svg><h1>Monitoring Pre-FS NTT</h1></div>
+  <div class="seg" id="seg" aria-label="Proyek"></div>
+  <nav id="nav" aria-label="Menu"></nav>
+  <span class="sync"><i class="dot" id="dot"></i><span id="sync">Menyambung…</span></span>
+</header>
+<main id="app"></main>
+<div id="ban"></div>
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mt">
+  <form class="dlg" id="form">
+    <h3 id="mt">Ubah item</h3>
+    <label for="f-title">Judul</label><input id="f-title" required>
+    <div class="row2">
+      <div><label for="f-sys">Sistem</label><select id="f-sys"></select></div>
+      <div><label for="f-st">Status</label><select id="f-st"></select></div>
+      <div><label for="f-pic">PIC</label><input id="f-pic" list="pics" placeholder="mis. Chaizar"></div>
+      <div><label for="f-due">Tenggat</label><input id="f-due" type="date"></div>
+    </div>
+    <label for="f-note">Catatan</label><textarea id="f-note" style="min-height:70px" placeholder="Progres, kendala, tautan dokumen…"></textarea>
+    <div class="acts"><button type="button" class="btn ghost" id="f-del">Hapus</button>
+      <span style="display:flex;gap:10px"><button type="button" class="btn ghost" id="f-cancel">Batal</button><button type="submit" class="btn pri">Simpan</button></span></div>
+  </form>
+</div>
+<datalist id="pics"><option>Qashtalani</option><option>Chaizar</option><option>Rizky</option><option>Ario</option><option>Ardafillah</option><option>IESR</option><option>PLN</option></datalist>
+<div class="toast" id="toast" role="status"></div>
+<script>
+{
+const P={
+ rote:{code:'1773',name:'Rote Ndao',fgd:"Ba'a",systems:[
+  {n:'Rote',role:'Sistem besar',cap:10000,peak:8500,unit:'kW',mx:550,my:255,cx:78,cy:75,
+   facts:[['Pembangkit',"PLTD BGP 9.000 kW + PLTD Ba'a 1.000 kW"],['PLTS ada','Usulandu 70 kWp · Landuthi 110 kWp'],['Jaringan','±300 gardu · ±17,6 MVA trafo']],
+   warn:'Beban puncak 8.500 kW dari SLD 12 Jun 2026, masih perlu diverifikasi dengan logsheet.',
+   steps:['PLTS untuk hemat BBM di siang hari','Tambah baterai (BESS) bertahap','Porsi EBT naik, diesel jadi penopang']},
+  {n:'Ndao',role:'Pulau kecil',cap:280,peak:227,unit:'kW',day:88,night:172,mx:414,my:291,cx:44,cy:88,
+   facts:[['Pembangkit','PLTD 5 mesin · terpasang 731 kW'],['Energi','±2.830 kWh/hari · ±1,03 GWh/tahun'],['Jaringan','1 penyulang · 4 gardu × 50 kVA'],['Lahan PLTS','Sudah tersedia (info PLN)']],
+   warn:'Cadangan daya hanya ±53 kW di atas beban puncak.',
+   opts:[['S1','Hemat BBM',15,'100 kWp','tanpa baterai','48 kL'],['S2','Menengah',43,'300 kWp','600 kWh','133 kL'],['S3','Porsi tinggi',83,'600 kWp','1.500 kWh','257 kL']],off:18}]},
+ sabu:{code:'1772',name:'Sabu Raijua',fgd:'Seba',systems:[
+  {n:'Sabu',role:'Sistem besar',cap:3665,peak:4200,unit:'kW',day:2900,night:4200,mx:174,my:204,cx:21,cy:33,
+   facts:[['Pembangkit','PLTD Seba 13 mesin · terpasang 7.780 kW'],['PLTS ada','Eilode 1,4 MWp tanpa baterai + diesel sewa'],['Jaringan','5 penyulang · 126 gardu · 9.325 kVA']],
+   warn:'Daya pasok PLTD Seba di bawah beban puncak, sistem bergantung pada Eilode. Angka beban belum diverifikasi.',
+   steps:['Kaji penambahan baterai di PLTS Eilode','Tambah PLTS + BESS bertahap','Energi surya terbuang berkurang, diesel lebih stabil']},
+  {n:'Raijua',role:'Pulau kecil',cap:490,peak:351,n1:340,unit:'kW',day:142,night:351,mx:90,my:231,cx:13,cy:77,
+   facts:[['Pembangkit','PLTD 6 mesin · terpasang 980 kW'],['PLTS ada','Memasok sejak Jul 2026, s.d. 73 kW'],['Jaringan','1 penyulang radial · 7 gardu · 500 kVA'],['Lahan PLTS','Perlu lahan tambahan']],
+   warn:'Jika mesin terbesar (150 kW) lepas, sisa 340 kW di bawah beban puncak 351 kW.',
+   opts:[['S1','Hemat BBM',14,'150 kWp','tanpa baterai','72 kL'],['S2','Menengah',32,'400 kWp','600 kWh','162 kL'],['S3','Porsi tinggi',88,'1.000 kWp','3.000 kWh','446 kL']],off:21}]}
+};
+const VIEWS=[['peta','Peta','M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2zM9 4v14M15 6v14'],['jadwal','Jadwal','M4 6h16v14H4zM4 10h16M8 3v4M16 3v4'],['kerja','Pekerjaan','M4 5h4v14H4zM10 5h4v9h-4zM16 5h4v6h-4z'],['data','Data','M5 4h10l4 4v12H5zM14 4v5h5M8 14l2 2 4-4'],['sistem','Sistem','M13 3L5 13h6l-1 8 8-10h-6z'],['catatan','Catatan','M4 5h16v11H9l-5 4z']];
+const K={deliv:[['todo','Belum'],['jalan','Disusun'],['kirim','Diserahkan'],['selesai','Disetujui']],
+ task:[['todo','Belum'],['jalan','Berjalan'],['blok','Terhambat'],['selesai','Selesai']],
+ data:[['todo','Belum diminta'],['jalan','Diminta'],['part','Sebagian'],['selesai','Diterima'],['blok','Tidak tersedia']]};
+const GANTT=[['Laporan pendahuluan & permintaan data','2026-11-01','2026-11-30'],['Pengumpulan data & kondisi saat ini','2026-11-01','2027-01-31'],['Kunjungan lapangan','2026-12-01','2027-01-31'],['Proyeksi kebutuhan 20 tahun','2027-01-01','2027-03-31'],['Potensi surya & pemilihan lokasi','2027-01-01','2027-03-31'],['Opsi teknis, simulasi & kajian jaringan','2027-01-01','2027-03-31'],['Ekonomi & model bisnis','2027-02-01','2027-04-30'],['Regulasi, lingkungan, sosial & O&M','2027-02-01','2027-04-30'],['FGD validasi','2027-03-01','2027-03-31',1],['Peta jalan, laporan akhir & serah terima','2027-03-01','2027-04-30']];
+const G0=dt('2026-11-01'),G1=dt('2027-05-01');
+const S={items:[],logs:[],db:null,user:null,me:null,ro:false,live:false,names:{},sel:{rote:'Rote',sabu:'Sabu'},filt:'Semua',edit:null,draft:{}};
+const $=s=>document.querySelector(s),app=$('#app'),RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
+function dt(s){const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)}
+function today(){const t=new Date();return new Date(t.getFullYear(),t.getMonth(),t.getDate())}
+function left(s){return s?Math.round((dt(s)-today())/864e5):null}
+function fd(s){return s?dt(s).toLocaleDateString('id-ID',{day:'numeric',month:'short'}):'tanpa tenggat'}
+function rel(s){const l=left(s);return l==null?'':l<0?Math.abs(l)+' hari lewat':l===0?'hari ini':l===1?'besok':l+' hari lagi'}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function f(v){return v.toLocaleString('id-ID')}
+function pos(d){return Math.max(0,Math.min(100,(d-G0)/(G1-G0)*100))}
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),2600)}
+function lab(k,v){return (K[k].find(x=>x[0]===v)||K[k][0])[1]}
+function its(p,k){return S.items.filter(i=>i.proj===p&&i.kind===k).sort((a,b)=>(a.due||'9999').localeCompare(b.due||'9999')||(a.order||0)-(b.order||0))}
+function isLate(i){return i.status!=='selesai'&&i.due&&left(i.due)<0}
+function stats(p){const t=its(p,'task'),d=its(p,'data'),dv=its(p,'deliv');const done=t.filter(i=>i.status==='selesai').length,rec=d.filter(i=>i.status==='selesai').length;
+ return {pct:t.length?Math.round(done/t.length*100):0,done,tot:t.length,rec,dtot:d.length,dpct:d.length?Math.round(rec/d.length*100):0,sent:dv.filter(i=>i.status==='kirim'||i.status==='selesai').length,nx:dv.find(i=>i.status!=='selesai'&&i.status!=='kirim')}}
+function route(){const [p,v]=location.hash.slice(1).split('-');return {p:P[p]?p:'rote',v:VIEWS.some(x=>x[0]===v)?v:'peta'}}
+const off=()=>S.ro||!S.db?'disabled':'';
+function ring(p,big,l,col){const C=163.4;return `<div class="ring"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="26" class="rt"/><circle cx="32" cy="32" r="26" class="rv" style="stroke:${col||'var(--acc)'};stroke-dasharray:${Math.max(p,.01)/100*C} ${C}"/></svg><b>${big}</b><span>${l}</span></div>`}
+function stSel(i){return `<select class="st" data-st="${esc(i.id)}" aria-label="Status ${esc(i.title)}" ${off()}>${K[i.kind].map(([v,l])=>`<option value="${v}"${v===i.status?' selected':''}>${l}</option>`).join('')}</select>`}
+function empty(){return `<div class="empty">${S.live?'Belum ada item.':S.db?'Memuat data bersama…':'Data bersama belum terhubung.'}</div>`}
+
+const SUN='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5" fill="var(--sun)"/><g stroke="var(--sun)" stroke-width="2" stroke-linecap="round"><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></g></svg>';
+const MOON='<svg viewBox="0 0 24 24"><path d="M20 14A8 8 0 0110 4a8 8 0 1010 10z" fill="var(--ink)"/></svg>';
+function sysCard(s){const mx=Math.max(s.cap,s.peak)*1.02,dm=s.night||1;
+ return `<div class="hd" style="margin-bottom:6px"><h2>${s.n}</h2><span class="tag">${s.role}</span></div>
+ <div class="meter"><div><span>Daya mampu pasok</span><s style="width:${s.cap/mx*100}%"></s><em>${f(s.cap)} ${s.unit}</em></div>
+ ${s.n1?`<div><span>Mesin terbesar lepas</span><s class="n1" style="width:${s.n1/mx*100}%"></s><em>${f(s.n1)} ${s.unit}</em></div>`:''}
+ <div><span>Beban puncak</span><s class="pk" style="width:${s.peak/mx*100}%"></s><em>${f(s.peak)} ${s.unit}</em></div></div>
+ ${s.day?`<div class="dn">${SUN}<s class="d" style="width:${s.day/dm*100}%"></s><em>siang ${f(s.day)} kW</em>${MOON}<s class="n" style="width:100%"></s><em>malam ${f(s.night)} kW</em></div>`:''}
+ <dl class="facts">${s.facts.map(([a,b])=>`<dt>${a}</dt><dd>${esc(b)}</dd>`).join('')}</dl><p class="warn">${esc(s.warn)}</p>`}
+
+function mapSvg(p){const A=p==='rote'?'':' dim',B=p==='sabu'?'':' dim',r1='M682,98 L640,128 Q600,170 528,258',r2='M682,98 L640,128 Q420,110 162,190';
+ const ship=(d,t,b)=>RM?'':`<g><path d="M-9,-4h18l-4,8h-10z" fill="#fff"/><rect x="-3" y="-9" width="6" height="5" fill="var(--acc)"/><animateMotion dur="${t}s" begin="${b}s" repeatCount="indefinite" path="${d}"/></g>`;
+ return `<svg viewBox="0 0 840 390" aria-hidden="true">
+ 
+ ${[[230,90],[330,300],[470,150],[700,250],[120,320],[590,340]].map(([x,y])=>`<path class="wave" d="M${x},${y}q10,-8 20,0t20,0"/>`).join('')}
+ <g transform="translate(62,58)"><g class="rays" stroke="var(--sun)" stroke-width="5" stroke-linecap="round">${[0,45,90,135,180,225,270,315].map(a=>`<path d="M0,-34V-46" transform="rotate(${a})"/>`).join('')}</g><circle r="24" fill="var(--sun)"/></g>
+ <polygon class="timor" points="900,-120 795,0 726,39 690,51 726,75 684,96 654,120 648,147 690,153 750,135 900,80"/><ellipse class="timor" cx="624" cy="111" rx="11" ry="17"/>
+ <path class="route" d="${r1}"/><path class="route" d="${r2}"/><path class="route s" d="M528,258 Q470,262 418,288"/><path class="route s" d="M159,192 Q120,196 94,226"/>
+ <polygon class="land${A}" points="636,180 615,186 590,205 560,225 535,243 505,275 480,295 462,312 465,326 485,330 510,318 540,300 570,280 600,255 625,225 640,198"/>
+ <ellipse class="land${A}" cx="414" cy="291" rx="7" ry="5"/>
+ <ellipse class="land${B}" cx="174" cy="204" rx="40" ry="19" transform="rotate(-14 174 204)"/><ellipse class="land${B}" cx="90" cy="231" rx="12" ry="7"/>
+ ${ship(r1,11,0)}${ship(r2,17,0)}
+ <circle cx="684" cy="96" r="6" fill="#fff"/><circle cx="528" cy="258" r="4" fill="var(--sea2)"/><circle cx="159" cy="192" r="4" fill="var(--sea2)"/>
+ ${P[p].systems.map(s=>`<circle class="pulse" cx="${s.mx}" cy="${s.my}" r="9"${s.n===S.sel[p]?'':' style="stroke:#fff"'}/>`).join('')}
+ <path d="M670,368h137M670,362v12M807,362v12" stroke="#fff" stroke-width="2" opacity=".7" fill="none"/></svg>`}
+function vPeta(p){const st=stats(p),s=P[p].systems.find(x=>x.n===S.sel[p])||P[p].systems[0],nx=st.nx;
+ const up=[...its(p,'deliv'),...its(p,'task'),...its(p,'data')].filter(i=>i.status!=='selesai'&&i.due).sort((a,b)=>a.due.localeCompare(b.due)).slice(0,4);
+ const chips=Object.entries(P).flatMap(([k,X])=>X.systems.map(y=>`<button class="chip${k===p&&y.n===s.n?' on':''}${k!==p?' off':''}" style="left:${y.cx}%;top:${y.cy}%" data-isl="${k}|${y.n}"><b>${y.n}</b>puncak ${f(y.peak)} kW</button>`)).join('');
+ return `<div class="view v-peta"><div class="col l">
+ <div class="card mapcard"><div class="map">${mapSvg(p)}${chips}
+ <span class="mlab" style="left:82%;top:16%">Kupang · asal kiriman BBM</span><span class="mlab i" style="left:42%;top:14%">Laut Sawu</span><span class="mlab" style="left:59%;top:61%">Ba'a</span><span class="mlab" style="left:16%;top:55%">Seba</span><span class="mlab" style="left:88%;top:89%">±50 km</span></div></div>
+ <div class="card"><div class="hd" style="margin-bottom:8px"><h3>Tenggat terdekat · ${P[p].name}</h3><a class="mute" href="#${p}-kerja">Lihat semua pekerjaan</a></div>
+ ${up.length?`<ul class="up">${up.map(i=>`<li><i class="${isLate(i)?'late':''}">${rel(i.due)}</i><span>${i.code?`<b>${esc(i.code)}</b> · `:''}${esc(i.title)}</span></li>`).join('')}</ul>`:empty()}</div></div>
+ <div class="col" style="grid-template-rows:auto minmax(0,1fr)">
+ <div class="card"><div class="rings">${ring(st.pct,st.pct+'%',`pekerjaan ${st.done}/${st.tot}`)}${ring(st.dpct,st.rec+'/'+st.dtot,'data diterima','var(--ok)')}${ring(st.sent/4*100,st.sent+'/4','laporan terkirim','var(--sun)')}</div>
+ <div class="next"><span class="num">${nx?esc(nx.code):'✓'}</span><span>${nx?`${esc(nx.title)}<small>${fd(nx.due)} · ${rel(nx.due)}</small>`:'Semua laporan sudah diserahkan'}</span></div></div>
+ <div class="card">${sysCard(s)}</div></div></div>`}
+
+function vJadwal(p){const t=today(),dv=its(p,'deliv'),cur=dv.find(i=>i.status!=='selesai');
+ const months=['Nov','Des','Jan 2027','Feb','Mar','Apr'].map((m,k)=>[m,pos(new Date(2026,10+k,1))]),grid=months.map(([,x])=>`<i class="gl" style="left:${x}%"></i>`).join('');
+ return `<div class="view v-jadwal"><div class="card"><div class="hd"><h2>Jadwal kerja ${P[p].name} · November 2026 – April 2027</h2><span class="mute">hijau = periode sudah lewat · kuning = FGD</span></div>
+ <div class="gantt"><div class="grow" style="height:20px"><span></span><div class="months">${months.map(([m,x])=>`<span style="left:calc(${x}% + 4px)">${m}</span>`).join('')}</div></div>
+ ${GANTT.map(([n,a,b,fg],k)=>`<div class="grow"><span class="lab">${esc(fg?n+' di '+P[p].fgd:n)}</span><div class="track">${grid}<i class="bar${fg?' fgd':dt(b)<t?' past':''}" style="left:${pos(dt(a))}%;width:${pos(dt(b))-pos(dt(a))+.6}%;animation-delay:${k*50}ms"></i></div></div>`).join('')}
+ <div class="grow"><span class="lab mute">Laporan</span><div class="track"></div></div>
+ <div class="gov">${dv.map(i=>`<span class="ms${i.status==='selesai'||i.status==='kirim'?' done':''}" style="left:${pos(dt(i.due))}%">${esc(i.code)}</span>`).join('')}${t>=G0&&t<G1?`<i class="today" style="left:${pos(t)}%"><b>hari ini</b></i>`:''}</div></div></div>
+ <div class="dels">${dv.length?dv.map(i=>`<div class="del ${esc(i.status)}${i===cur?' cur':''}"><div class="hd" style="margin:0"><span class="num">${esc(i.code)}</span><span class="${isLate(i)?'late':'mute'}">${fd(i.due)}${i.status==='selesai'?'':' · '+rel(i.due)}</span></div><span>${esc(i.title)}</span>${stSel(i)}</div>`).join(''):empty()}</div></div>`}
+
+function chipsF(p){return ['Semua',...P[p].systems.map(s=>s.n)].map(s=>`<button class="fchip" data-f="${s}" aria-pressed="${S.filt===s}">${s}</button>`).join('')}
+function flt(L){return S.filt==='Semua'?L:L.filter(i=>i.sys===S.filt||i.sys==='Semua'||!i.sys)}
+function vKerja(p){const L=flt(its(p,'task')),cols=[['Belum',['todo']],['Berjalan',['jalan','blok']],['Selesai',['selesai']]];
+ const card=(i,k)=>`<div class="kc ${esc(i.status)}" style="animation-delay:${Math.min(k,8)*35}ms"><button class="kt" data-ed="${esc(i.id)}">${esc(i.title)}</button>${i.note?`<span class="mute">${esc(i.note)}</span>`:''}
+ <div class="km">${i.pic?`<span class="av" title="${esc(i.pic)}">${esc(i.pic[0].toUpperCase())}</span>${esc(i.pic)}`:''}<span class="${isLate(i)?'late':''}">${i.status==='selesai'?fd(i.due):fd(i.due)+(i.due?' · '+rel(i.due):'')}</span>${i.sys&&i.sys!=='Semua'?`<span class="tag">${esc(i.sys)}</span>`:''}${i.status==='blok'?'<span class="tag" style="background:var(--acc);color:#fff">Terhambat</span>':''}
+ ${i.status==='todo'?`<button class="go" data-go="${esc(i.id)}|jalan" ${off()}>Mulai</button>`:i.status!=='selesai'?`<button class="go ok" data-go="${esc(i.id)}|selesai" ${off()}>Selesai ✓</button>`:''}</div></div>`;
+ return `<div class="view v-kerja"><div class="bar2"><h2 style="margin-right:6px">Pekerjaan ${P[p].name}</h2>${chipsF(p)}<span class="mute">Klik judul untuk mengubah PIC, tenggat, catatan</span><button class="btn pri" style="margin-left:auto" data-add="task" ${off()}>+ Tambah</button></div>
+ <div class="kb">${cols.map(([t,ss],c)=>{const X=L.filter(i=>ss.includes(i.status));return `<section class="kcol"><h3>${t}<span>${X.length}</span></h3><div class="klist" data-sc="k${c}">${X.length?X.map(card).join(''):empty()}</div></section>`}).join('')}</div></div>`}
+
+function vData(p){const A=its(p,'data'),L=flt(A),C=251.3,seg=[['selesai','Diterima','var(--ok)'],['part','Sebagian','var(--sun)'],['jalan','Diminta','var(--acc)'],['blok','Tidak tersedia','var(--ink)'],['todo','Belum diminta','var(--line)']];
+ let o=0;const arcs=seg.map(([k,,c])=>{const n=A.filter(i=>i.status===k).length,len=A.length?n/A.length*C:0,a=`<circle cx="50" cy="50" r="40" fill="none" stroke="${c}" stroke-width="14" stroke-dasharray="${len} ${C}" stroke-dashoffset="${-o}"/>`;o+=len;return a}).join('');
+ return `<div class="view v-data"><div class="bar2"><h2 style="margin-right:6px">Permintaan data ${P[p].name}</h2>${chipsF(p)}<button class="btn pri" style="margin-left:auto" data-add="data" ${off()}>+ Tambah</button></div>
+ <div class="body"><div class="card"><div class="donut"><svg viewBox="0 0 100 100" width="160" height="160">${arcs}</svg><b>${A.filter(i=>i.status==='selesai').length}/${A.length}</b></div>
+ <div class="leg">${seg.map(([k,l,c])=>`<span><i style="background:${c}"></i>${l}<em>${A.filter(i=>i.status===k).length}</em></span>`).join('')}</div>
+ <p class="mute" style="margin:12px 0 0">Sumber utama: PLN UIW NTT, UP3 Kupang, ULP setempat, UPK Flores, Pemkab dan IESR.</p></div>
+ <div class="card" data-sc="d"><div class="tiles">${L.length?L.map((i,k)=>`<div class="tile ${esc(i.status)}" style="animation-delay:${Math.min(k,10)*30}ms"><div><button class="kt" data-ed="${esc(i.id)}">${esc(i.title)}</button>${i.note?`<div class="mute">${esc(i.note)}</div>`:''}</div>
+ <div class="km">${i.sys&&i.sys!=='Semua'?`<span class="tag">${esc(i.sys)}</span>`:''}${i.due&&i.status!=='selesai'?`<span class="${isLate(i)?'late':''}">${fd(i.due)}</span>`:''}<span style="margin-left:auto">${stSel(i)}</span></div></div>`).join(''):empty()}</div></div></div></div>`}
+
+function vSistem(p){return `<div class="view v-sistem">${P[p].systems.map(s=>`<div class="card">${sysCard(s)}
+ ${s.opts?`<h3 style="margin-top:14px">Perkiraan awal ukuran PLTS + baterai</h3><div class="opts">${s.opts.map(([c,n,e,pv,b,bbm])=>`<div class="opt">${ring(e,e+'%','porsi EBT','var(--ok)')}<p><strong>${c} · ${n}</strong>${pv}<br>${b}<br>hemat BBM ${bbm}/th</p></div>`).join('')}</div>
+ <p class="mute" style="margin:8px 0 0">Pada S3 diesel bisa mati ±${s.off} jam sehari. Hitungan kasar dari laporan pendahuluan, ukuran final keluar di laporan antara (D3).</p>`
+ :`<h3 style="margin-top:14px">Arah desain</h3><div class="steps">${s.steps.map(x=>`<div>${x}</div>`).join('')}</div>`}</div>`).join('')}</div>`}
+
+function vCatatan(p){const L=S.logs.filter(l=>l.proj===p).slice(0,50),st=stats(p);
+ return `<div class="view v-catatan"><div class="card"><h2 style="margin-bottom:6px">Catatan ${P[p].name}</h2><p class="mute" style="margin:0 0 10px">Update singkat: apa yang selesai, kendala, keputusan rapat dengan IESR atau PLN.</p>
+ <textarea id="logtxt" aria-label="Catatan baru" placeholder="mis. Rapat koordinasi dengan UP3 Kupang, data kWh produksi dijanjikan minggu depan" ${off()}>${esc(S.draft[p]||'')}</textarea>
+ <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap"><button class="btn pri" data-log="${p}" ${off()}>Simpan catatan</button><button class="btn ghost" data-copy="${p}">Salin ringkasan progres</button></div>
+ <div class="rings" style="margin-top:16px">${ring(st.pct,st.pct+'%','pekerjaan')}${ring(st.dpct,st.rec+'/'+st.dtot,'data','var(--ok)')}${ring(st.sent/4*100,st.sent+'/4','laporan','var(--sun)')}</div></div>
+ <div class="card" data-sc="l"><h3>Riwayat</h3>${L.length?`<ul class="log">${L.map(l=>`<li>${esc(l.text)}<div class="mute">${l.by&&S.names[l.by]?esc(S.names[l.by])+' · ':''}${new Date(l.at).toLocaleString('id-ID',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div></li>`).join('')}</ul>`:`<div class="empty" style="margin-top:10px">Belum ada catatan.</div>`}</div></div>`}
+
+const VF={peta:vPeta,jadwal:vJadwal,kerja:vKerja,data:vData,sistem:vSistem,catatan:vCatatan};
+function render(anim){const {p,v}=route(),sc={};document.querySelectorAll('[data-sc]').forEach(e=>sc[e.dataset.sc]=e.scrollTop);
+ $('#seg').innerHTML=Object.entries(P).map(([k,X])=>`<a href="#${k}-${v}"${k===p?' aria-current="page"':''}>${X.name}</a>`).join('');
+ $('#nav').innerHTML=VIEWS.map(([k,l,d])=>`<a href="#${p}-${k}"${k===v?' aria-current="page"':''}><svg viewBox="0 0 24 24"><path d="${d}"/></svg>${l}</a>`).join('');
+ app.classList.toggle('anim',!!anim);app.innerHTML=VF[v](p);
+ if(!anim)document.querySelectorAll('[data-sc]').forEach(e=>e.scrollTop=sc[e.dataset.sc]||0);
+ $('#ban').innerHTML=S.ro?'<div class="banner">Akses Anda lihat saja. Minta pemilik memberi akses Contributor untuk mengubah status.</div>':(!S.db&&S.tried)||S.slow?'<div class="banner">Data bersama belum terjangkau. Buka halaman ini di claude.ai dalam keadaan masuk akun.</div>':'';
+ names([...new Set(S.logs.map(l=>l.by).filter(Boolean))])}
+async function names(ids){const need=ids.filter(i=>!(i in S.names));if(!need.length||!S.user)return;need.forEach(i=>S.names[i]='');
+ try{const ps=await S.user.profiles(need);let ch=0;need.forEach(i=>{const n=ps?.[i]?.name||'';if(n){S.names[i]=n;ch=1}});if(ch)render()}catch(e){}}
+async function save(id,patch){if(!S.db)return;try{await S.db.collection('items').doc(id).update({...patch,updatedAt:Date.now(),updatedBy:S.me||''})}catch(e){fail(e)}}
+function fail(e){if(e?.code==='invalid_argument'){S.ro=true;render()}toast(e?.code==='quota_exceeded'?'Penyimpanan penuh, hapus item lama.':'Gagal menyimpan. Coba lagi.')}
+
+const M=$('#modal');
+function openEdit(id,kind){const {p}=route(),i=id?S.items.find(x=>x.id===id):{kind,sys:S.filt,status:'todo',proj:p};if(!i)return;S.edit={id,proj:i.proj,kind:i.kind};
+ $('#mt').textContent=(id?'Ubah ':'Tambah ')+(i.kind==='data'?'permintaan data':'pekerjaan');
+ $('#f-title').value=i.title||'';$('#f-pic').value=i.pic||'';$('#f-due').value=i.due||'';$('#f-note').value=i.note||'';
+ $('#f-sys').innerHTML=['Semua',...P[i.proj].systems.map(s=>s.n)].map(s=>`<option${s===i.sys?' selected':''}>${s}</option>`).join('');
+ $('#f-st').innerHTML=K[i.kind].map(([a,b])=>`<option value="${a}"${a===i.status?' selected':''}>${b}</option>`).join('');
+ const d=$('#f-del');d.hidden=!id;d.textContent='Hapus';d.dataset.arm='';M.classList.add('open');$('#f-title').focus()}
+function close(){M.classList.remove('open');S.edit=null}
+document.addEventListener('click',e=>{const t=e.target.closest('button');if(!t)return;const {p}=route();
+ if(t.dataset.ed){if(!S.ro&&S.db)openEdit(t.dataset.ed)}
+ else if(t.dataset.add)openEdit(null,t.dataset.add);
+ else if(t.dataset.go){const [id,st]=t.dataset.go.split('|');save(id,{status:st})}
+ else if(t.dataset.f){S.filt=t.dataset.f;render()}
+ else if(t.dataset.isl){const [k,n]=t.dataset.isl.split('|');S.sel[k]=n;if(k!==p)location.hash=k+'-peta';else render()}
+ else if(t.dataset.log)addLog(t.dataset.log);
+ else if(t.dataset.copy)copySum(t.dataset.copy)});
+document.addEventListener('change',e=>{const t=e.target;if(t.dataset.st){const i=S.items.find(x=>x.id===t.dataset.st);if(i&&i.status!==t.value)save(i.id,{status:t.value})}});
+document.addEventListener('input',e=>{if(e.target.id==='logtxt')S.draft[route().p]=e.target.value});
+$('#f-cancel').onclick=close;M.addEventListener('click',e=>{if(e.target===M)close()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&M.classList.contains('open'))close()});
+$('#f-del').onclick=async()=>{const b=$('#f-del');if(!b.dataset.arm){b.dataset.arm='1';b.textContent='Klik lagi untuk hapus';return}
+ const id=S.edit?.id;close();try{await S.db.collection('items').doc(id).delete();toast('Item dihapus')}catch(e){fail(e)}};
+$('#form').addEventListener('submit',async e=>{e.preventDefault();if(!S.db||!S.edit)return;
+ const d={title:$('#f-title').value.trim(),sys:$('#f-sys').value,pic:$('#f-pic').value.trim(),due:$('#f-due').value,status:$('#f-st').value,note:$('#f-note').value.trim()};
+ if(!d.title)return;const {id,proj,kind}=S.edit;close();
+ if(id)await save(id,d);else{try{await S.db.collection('items').doc().set({...d,kind,proj,order:Date.now(),updatedAt:Date.now(),updatedBy:S.me||''});toast('Item ditambahkan')}catch(er){fail(er)}}});
+async function addLog(p){const txt=(S.draft[p]||'').trim();if(!txt||!S.db)return;
+ try{await S.db.collection('log').add({proj:p,text:txt,by:S.me||'',at:Date.now()});S.draft[p]='';render();toast('Catatan disimpan')}catch(e){fail(e)}}
+async function copySum(p){const X=P[p],s=stats(p),T=its(p,'task'),l=[`Laporan kemajuan Pre-FS ${X.name} (RFP ${X.code}), ${new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})}`,'',`Pekerjaan selesai: ${s.pct}% (${s.done}/${s.tot})`,`Data diterima: ${s.rec}/${s.dtot}`,'','Laporan:'];
+ its(p,'deliv').forEach(i=>l.push(`- ${i.code} ${i.title}: ${lab('deliv',i.status)} (tenggat ${fd(i.due)})`));
+ l.push('','Selesai:');T.filter(i=>i.status==='selesai').forEach(i=>l.push('- '+i.title));
+ l.push('','Berjalan / terhambat:');T.filter(i=>i.status==='jalan'||i.status==='blok').forEach(i=>l.push(`- ${i.title} (${lab('task',i.status)})${i.note?': '+i.note:''}`));
+ l.push('','Data masih ditunggu:');its(p,'data').filter(i=>i.status!=='selesai').forEach(i=>l.push(`- ${i.title}: ${lab('data',i.status)}`));
+ try{await navigator.clipboard.writeText(l.join('\n'));toast('Ringkasan disalin')}catch(e){toast('Browser menolak menyalin')}}
+
+window.addEventListener('hashchange',()=>render(true));
+render(true);
+(async()=>{let db=null,user=null;try{[db,user]=await Promise.all([claude.use('db'),claude.use('user')])}catch(e){}
+ S.tried=true;S.db=db;S.user=user;
+ if(user){try{S.me=await user.id()}catch(e){}try{if((await user.can('data.write'))===false)S.ro=true}catch(e){}}
+ if(!db){$('#sync').textContent='Tidak terhubung';render();return}
+ const timer=setTimeout(()=>{S.slow=true;$('#sync').textContent='Belum terjangkau';render()},10000);
+ const err=()=>{clearTimeout(timer);$('#sync').textContent='Sinkron terputus';render()};
+ S.u1=db.collection('items').onSnapshot(snap=>{S.items=snap.docs.map(d=>({id:d.id,...d.data()}));let first=false;
+  if(!snap.metadata.fromCache&&!S.live){clearTimeout(timer);S.live=true;S.slow=false;first=true;$('#dot').classList.add('on');$('#sync').textContent='Tersinkron'}render(first)},err);
+ S.u2=db.collection('log').orderBy('at','desc').limit(200).onSnapshot(snap=>{S.logs=snap.docs.map(d=>({id:d.id,...d.data()}));render()},err);
+ render()})();
+}
+</script>
+</body>
+</html>
