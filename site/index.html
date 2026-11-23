@@ -165,7 +165,8 @@ const $=s=>document.querySelector(s);
 const f=(v,d=0)=>Number(v).toLocaleString('id-ID',{maximumFractionDigits:d,minimumFractionDigits:d});
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const VIEWS=[['ringkasan','Ringkasan'],['sistem','Sistem & Pembangkit'],['beban','Langgam Beban'],['sld','Single Line Diagram'],['sumber','Data & Sumber']];
-const SUS=300; // kW: batas nilai Ndao yang dianggap anomali (DMP hanya 280 kW)
+const SUS=300;
+const XLS=location.hostname.endsWith('claude.ai')?'https://github.com/qastill/rotesabu/raw/claude/sweet-volta-hcba6j/site/data/':'data/'; // Excel tidak bisa dihosting di artifact, ambil dari GitHub // kW: batas nilai Ndao yang dianggap anomali (DMP hanya 280 kW)
 
 /* ---------- fakta sistem (dari SLD + data mesin) ---------- */
 const SYS=[
@@ -388,7 +389,7 @@ function sldInit(){const fr=$('#frame'),img=$('#sldimg');if(!fr)return;let k=1,t
 /* ---------- sumber ---------- */
 function vSumber(){const F=[['pdf','SLD-Rote-Ndao-Jun-2026.pdf','Single Line ULP Rote Ndao','1 halaman · Visio · 12 Jun 2026 · 1,3 MB'],['pdf','SLD-Sabu-Raijua-Okt-2026.pdf','Single Line Diagram Sistem Sabu dan Raijua','2 halaman · Okt 2026 · 155 kB'],['xls','Langgam-Beban-Ndao-2026.xlsx','Langgam beban PLTD Ndao','10 lembar (Jan–Okt 2026), beban per jam per tanggal · 59 kB'],['xls','Langgam-Beban-Raijua-2026.xlsx','Rekapitulasi beban puncak PLTD Raijua','6 lembar (Mei–Okt 2026), per unit pada hari tertinggi · 230 kB'],['xls','Data-Mesin-Ndao-Raijua-Seba.xlsx','Data mesin PLTD Ndao, Raijua dan Seba','3 lembar: merk, tipe, no. seri, DT/DMN/DMP · 12 kB']];
  return `<div class="grid g2"><div class="card"><h2>Berkas sumber</h2><p class="mute small" style="margin:4px 0 12px">Semua berkas asli dari PLN tersedia untuk diunduh. Nama berkas dirapikan, isi tidak diubah.</p>
- <div class="files">${F.map(([t,fn,a,b])=>`<a class="file" href="data/${fn}" download style="text-decoration:none;color:inherit"><i class="${t}">${t.toUpperCase()}</i><span class="t"><b>${a}</b><span>${b}</span></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M6 11l6 6 6-6M4 21h16"/></svg></a>`).join('')}</div></div>
+ <div class="files">${F.map(([t,fn,a,b])=>`<a class="file" href="${t==='xls'?XLS:'data/'}${fn}" download style="text-decoration:none;color:inherit"><i class="${t}">${t.toUpperCase()}</i><span class="t"><b>${a}</b><span>${b}</span></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M6 11l6 6 6-6M4 21h16"/></svg></a>`).join('')}</div></div>
  <div class="grid" style="align-content:start"><div class="card"><h3>Catatan kualitas data</h3><ul class="clean" style="margin-top:8px">
   <li><b>Ndao, Maret 2026:</b> dua sel (tgl 12 pukul 03.00 = 454 kW, tgl 17 pukul 07.00 = 815 kW) melebihi daya mampu 280 kW; diperlakukan sebagai salah ketik dan diabaikan dalam puncak dan rata-rata.</li>
   <li><b>Ndao:</b> banyak sel bernilai 0 pada siang hari (mis. Februari tgl 2–4) menunjukkan padam atau tidak dicatat, bukan beban nol. Rata-rata dihitung tanpa sel 0.</li>
