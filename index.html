@@ -41,6 +41,7 @@ nav a{flex:none;padding:8px 12px;border-radius:10px;text-decoration:none;color:v
 nav a[aria-current]{background:var(--ink);color:var(--card)}nav a:hover:not([aria-current]){color:var(--ink)}
 .tog{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;width:36px;height:36px;display:grid;place-items:center;cursor:pointer;flex:none}
 .tog svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+@media(min-width:761px){.hwrap{flex-wrap:nowrap}nav a{padding:8px 10px}}
 @media(max-width:760px){.hwrap{gap:8px}.tog{margin-left:auto}nav{order:3;flex:1 0 100%;margin-left:-16px;padding:0 16px;width:calc(100% + 32px)}}
 /* layout */
 main{max-width:1240px;margin:0 auto;padding:20px 16px 60px}
@@ -164,7 +165,7 @@ const D=window.DATA;
 const $=s=>document.querySelector(s);
 const f=(v,d=0)=>Number(v).toLocaleString('id-ID',{maximumFractionDigits:d,minimumFractionDigits:d});
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const VIEWS=[['ringkasan','Ringkasan'],['sistem','Sistem & Pembangkit'],['beban','Langgam Beban'],['sld','Single Line Diagram'],['sumber','Data & Sumber']];
+const VIEWS=[['ringkasan','Ringkasan'],['insight','Insight & Rekomendasi'],['sistem','Sistem & Pembangkit'],['beban','Langgam Beban'],['sld','Single Line Diagram'],['sumber','Data & Sumber']];
 const SUS=300;
 const XLS=location.hostname.endsWith('claude.ai')?'https://github.com/qastill/rotesabu/raw/claude/sweet-volta-hcba6j/data/':'data/'; // Excel tidak bisa dihosting di artifact, ambil dari GitHub // kW: batas nilai Ndao yang dianggap anomali (DMP hanya 280 kW)
 
@@ -175,15 +176,15 @@ const SYS=[
   warn:'Beban puncak 8.500 kW tertulis di SLD 12 Jun 2026 dan belum diverifikasi dengan logsheet. Langgam beban Rote belum diterima.',
   steps:['PLTS siang hari untuk menghemat BBM','Tambah BESS bertahap untuk geser energi surya ke malam','Porsi EBT naik, PLTD BGP menjadi penopang']},
  {k:'ndao',n:'Ndao',proj:'Rote Ndao',role:'Pulau kecil · 1 penyulang',cap:280,peak:227,dt:731,mx:414,my:291,cx:46,cy:88,mesin:'ndao',
-  facts:[['Pembangkit','PLTD Ndao, 5 mesin · terpasang 731 kW · DMP 280 kW (SLD mencatat daya mampu 310 kW)'],['Beban puncak','227 kW (Apr 2026, logsheet) · SLD mencatat 188 kW'],['Energi','±2.700 kWh/hari dari langgam Jan–Okt 2026'],['Jaringan','1 penyulang dari PLTD · 4 gardu × 50 kVA (ND 001–004)'],['Lahan PLTS','Sudah tersedia (info PLN)']],
-  warn:'Cadangan daya hanya ±53 kW di atas beban puncak. Beban siang (±100 kW) jauh di bawah beban malam (±155 kW), sehingga PLTS tanpa baterai hanya menggantikan sebagian kecil BBM.',
+  facts:[['Pembangkit','PLTD Ndao, 5 mesin · terpasang 731 kW · DMP 280 kW (SLD mencatat daya mampu 310 kW)'],['Beban puncak','227 kW (Apr 2026, logsheet) · SLD mencatat 188 kW'],['Energi','±2.850 kWh/hari dari langgam Jan–Okt 2026'],['Jaringan','1 penyulang dari PLTD · 4 gardu × 50 kVA (ND 001–004)'],['Lahan PLTS','Sudah tersedia (info PLN)']],
+  warn:'Cadangan daya hanya ±53 kW di atas beban puncak. Beban siang (±95 kW) jauh di bawah beban malam (±150 kW), sehingga PLTS tanpa baterai hanya menggantikan sebagian kecil BBM.',
   opts:[['S1','Hemat BBM',15,'100 kWp','tanpa baterai','48 kL'],['S2','Menengah',43,'300 kWp','600 kWh','133 kL'],['S3','Porsi tinggi',83,'600 kWp','1.500 kWh','257 kL']],off:18},
  {k:'sabu',n:'Sabu',proj:'Sabu Raijua',role:'Sistem besar · 5 penyulang',cap:3665,peak:4200,dt:7780,mx:174,my:204,cx:21,cy:33,mesin:'seba',
   facts:[['Pembangkit','PLTD Seba, 13 mesin · terpasang 7.780 kW · DMP 3.665 kW'],['Hybrid Eilode','6 unit PLTD sewa + PLTS 1,4 MWp tanpa baterai, masuk lewat express berbeban'],['PLTS lain','PLTS Raerobo (P. Liae)'],['Penyulang','Mesara · Seba · Menia · Liae · Bolou, bus 20,04 kV'],['Jaringan','±126 gardu (SB, ST, HM, LA) · 50–250 kVA · ±9,3 MVA'],['Sumber','SLD Sistem Sabu, Oktober 2026 (Wiliams Haumahu / Stevan J. Letik / I Wayan Budiyasinto)']],
   warn:'Daya mampu PLTD Seba (3.665 kW) di bawah beban puncak ±4.200 kW; sistem bergantung pada diesel sewa dan PLTS Eilode. Langgam beban Sabu belum diterima.',
   steps:['Kaji penambahan baterai di PLTS Eilode','Tambah PLTS + BESS bertahap','Energi surya terbuang berkurang, diesel lebih stabil']},
- {k:'raijua',n:'Raijua',proj:'Sabu Raijua',role:'Pulau kecil · 1 penyulang',cap:490,peak:351,n1:340,dt:980,mx:90,my:231,cx:12,cy:76,mesin:'raijua',
-  facts:[['Pembangkit','PLTD Raijua, 6 mesin · terpasang 980 kW · DMP 490 kW'],['Beban puncak','351 kW (17 Sep 2026, pukul 19.00)'],['PLTS tersambung','Beroperasi sejak Jul 2026, output tertinggi 73 kW (Sep 2026)'],['Jaringan','1 penyulang radial P. Raijua · 7 gardu (RJ 001–007) · ±500 kVA'],['Lahan PLTS','Perlu lahan tambahan']],
+ {k:'raijua',n:'Raijua',proj:'Sabu Raijua',role:'Pulau kecil · 1 penyulang',out:'Di luar lingkup RFP 1772',cap:490,peak:351,n1:340,dt:980,mx:90,my:231,cx:12,cy:76,mesin:'raijua',
+  facts:[['Pembangkit','PLTD Raijua, 6 mesin · terpasang 980 kW · DMP 490 kW'],['Beban puncak','351 kW (17 Sep 2026, pukul 19.00)'],['PLTS tersambung','Beroperasi sejak Jul 2026, output tertinggi 73 kW (Sep 2026)'],['Jaringan','1 penyulang radial P. Raijua · 7 gardu (RJ 001–007) · ±500 kVA'],['Lahan PLTS','Perlu lahan tambahan'],['Lingkup RFP','RFP 1772 hanya mencakup Pulau Sabu; Raijua dapat diusulkan sebagai site tambahan saat inception']],
   warn:'Jika mesin terbesar (MAN 150 kW DMP) lepas, sisa 340 kW berada di bawah beban puncak 351 kW. Siang hari beban turun ke ±100 kW.',
   opts:[['S1','Hemat BBM',14,'150 kWp','tanpa baterai','72 kL'],['S2','Menengah',32,'400 kWp','600 kWh','162 kL'],['S3','Porsi tinggi',88,'1.000 kWp','3.000 kWh','446 kL']],off:21}];
 const SLDS=[
@@ -222,13 +223,14 @@ function mapSvg(){const r1='M682,98 L640,128 Q600,170 528,258',r2='M682,98 L640,
 
 /* ---------- views ---------- */
 function vRingkasan(){const nd=D.ndao.map(ndaoStats),rj=D.raijua;
- const ndPeak=Math.max(...nd.map(s=>s.peak)),ndE=nd.reduce((a,s)=>a+s.energy,0)/nd.length,rjPeak=Math.max(...rj.map(m=>m.peak)),rjPV=Math.max(...rj.map(m=>Math.max(...m.rows.map(r=>r[8]))));
+ const ndPkM=nd.reduce((b,s,i)=>s.peak>nd[b].peak?i:b,0),ndPeak=nd[ndPkM].peak,ndE=nd.reduce((a,s)=>a+s.energy,0)/nd.length,rjPeak=Math.max(...rj.map(m=>m.peak)),rjPV=Math.max(...rj.map(m=>Math.max(...m.rows.map(r=>r[8]))));
  return `<section class="hero">
  <div class="card mapcard"><div class="map">${mapSvg()}
   ${SYS.map(s=>`<button class="chip" style="left:${s.cx}%;top:${s.cy}%" data-go="sistem" data-sys="${s.k}"><b>${s.n}</b>puncak ${f(s.peak)} kW</button>`).join('')}
   <span class="mlab" style="left:82%;top:16%">Kupang · asal kiriman BBM</span><span class="mlab i" style="left:42%;top:14%">Laut Sawu</span><span class="mlab" style="left:59%;top:61%">Ba'a</span><span class="mlab" style="left:16%;top:55%">Seba</span><span class="mlab" style="left:88%;top:89%">±50 km</span></div></div>
  <div class="card lead"><span class="tag">Pre-FS PLTS + BESS · RFP 1772 & 1773 · Nov 2026 – Apr 2027</span>
   <h1>Empat sistem, satu laut, <span>satu arah: lebih sedikit solar</span></h1>
+  <p class="small mute">Lingkup kontrak: RFP 1773 (Rote + Ndao) dan RFP 1772 (Sabu). Raijua ditampilkan karena datanya tersedia, tetapi berada di luar lingkup RFP. <a href="#insight">Lihat insight</a>.</p>
   <p class="mute">Kumpulan data teknis yang sudah diterima dari PLN untuk kajian pra-kelayakan PLTS dan baterai di Kabupaten Rote Ndao dan Sabu Raijua: data mesin PLTD, langgam beban per jam, dan single line diagram. Klik pulau untuk masuk ke profil sistem.</p>
   <div class="kp">
    <div class="kpi"><b>${f(8500+227+4200+351)}<small> kW</small></b><span>jumlah beban puncak 4 sistem (tidak simultan)</span></div>
@@ -237,13 +239,13 @@ function vRingkasan(){const nd=D.ndao.map(ndaoStats),rj=D.raijua;
    <div class="kpi"><b>${D.ndao.length+D.raijua.length}<small> bulan</small></b><span>langgam beban Ndao (Jan–Okt) + Raijua (Mei–Okt)</span></div>
   </div></div></section>
  <section class="sec"><div class="hd"><h2>Posisi tiap sistem</h2><p class="mute">Batang abu-abu = daya mampu pasok PLTD, batang jingga = beban puncak yang tercatat. Jika jingga melewati abu-abu, sistem bergantung pada diesel sewa atau PLTS.</p></div>
- <div class="grid g4">${SYS.map(s=>{const mx=Math.max(s.cap,s.peak)*1.05;return `<div class="card sys"><div class="top"><div><h3>${s.n}</h3><span class="small mute">${s.role}</span></div><span class="tag">${s.proj}</span></div>
+ <div class="grid g4">${SYS.map(s=>{const mx=Math.max(s.cap,s.peak)*1.05;return `<div class="card sys"><div class="top"><div><h3>${s.n}</h3><span class="small mute">${s.role}</span></div><span class="tag${s.out?' w':''}">${s.out||s.proj}</span></div>
   <div class="meter"><div><span>Daya mampu PLTD</span><s style="width:${s.cap/mx*100}%"></s><em>${f(s.cap)} kW</em></div><div><span>Beban puncak</span><s class="pk" style="width:${s.peak/mx*100}%"></s><em>${f(s.peak)} kW</em></div></div>
   <p class="small">${s.peak>s.cap?`<span class="tag w">defisit ${f(s.peak-s.cap)} kW</span>`:`<span class="tag ok">cadangan ${f(s.cap-s.peak)} kW (${f((s.cap-s.peak)/s.cap*100)}%)</span>`}</p>
   <button class="btn" data-go="sistem" data-sys="${s.k}">Lihat profil →</button></div>`}).join('')}</div></section>
  <section class="sec grid g3">
   <div class="card"><h3>Ndao: beban malam dua kali siang</h3><p class="small mute" style="margin:6px 0 10px">Rata-rata Jan–Okt 2026 dari logsheet per jam.</p>
-   <div class="tiles" style="grid-template-columns:1fr 1fr"><div class="tile"><b>${f(ndPeak)}<small> kW</small></b><span>puncak tertinggi (Apr, 19.00)</span></div><div class="tile"><b>${f(ndE)}<small> kWh</small></b><span>energi rata-rata per hari</span></div></div>
+   <div class="tiles" style="grid-template-columns:1fr 1fr"><div class="tile"><b>${f(ndPeak)}<small> kW</small></b><span>puncak tertinggi (${D.ndao[ndPkM].m.slice(0,3)}, ${HOUR(nd[ndPkM].pw[0])})</span></div><div class="tile"><b>${f(ndE)}<small> kWh</small></b><span>energi rata-rata per hari</span></div></div>
    <a class="btn" href="#beban">Buka langgam beban</a></div>
   <div class="card"><h3>Raijua: PLTS sudah ikut memasok</h3><p class="small mute" style="margin:6px 0 10px">Hari beban tertinggi tiap bulan, per unit mesin.</p>
    <div class="tiles" style="grid-template-columns:1fr 1fr"><div class="tile"><b>${f(rjPeak)}<small> kW</small></b><span>puncak tertinggi (17 Sep, 19.00)</span></div><div class="tile"><b>${f(rjPV)}<small> kW</small></b><span>output PLTS tertinggi (siang)</span></div></div>
@@ -275,7 +277,7 @@ function mesinTable(k){const rows=D.mesin[k];const t=a=>rows.reduce((s,r)=>s+r[a
 function vSistem(){const s=SYS.find(x=>x.k===sel.sys),mx=Math.max(s.cap,s.peak,s.dt||0)*1.04;
  return `<div class="filters"><div class="seg" role="tablist">${SYS.map(x=>`<button role="tab" aria-pressed="${x.k===sel.sys}" data-sys="${x.k}">${x.n}</button>`).join('')}</div><span class="small mute">${s.proj} · ${s.role}</span></div>
  <div class="grid g2">
- <div class="card sys"><div class="top"><div><h2>${s.n}</h2><span class="small mute">${s.role}</span></div><span class="tag">${s.proj}</span></div>
+ <div class="card sys"><div class="top"><div><h2>${s.n}</h2><span class="small mute">${s.role}</span></div><span class="tag${s.out?' w':''}">${s.out||s.proj}</span></div>
   <div class="meter">${s.dt?`<div><span>Daya terpasang</span><s class="dt" style="width:${s.dt/mx*100}%"></s><em>${f(s.dt)} kW</em></div>`:''}
   <div><span>Daya mampu pasok</span><s style="width:${s.cap/mx*100}%"></s><em>${f(s.cap)} kW</em></div>
   ${s.n1?`<div><span>Mesin terbesar lepas (N-1)</span><s class="n1" style="width:${s.n1/mx*100}%"></s><em>${f(s.n1)} kW</em></div>`:''}
@@ -367,6 +369,76 @@ function vBeban(){const m=D.ndao[sel.ndao],s=ndaoStats(m),rm=D.raijua[sel.raijua
  <div class="tiles"><div class="tile"><b>${f(rpk)}<small> kW</small></b><span>puncak diesel, pukul ${HOUR(rh)}</span></div><div class="tile"><b>${f(rE)}<small> kWh</small></b><span>produksi diesel hari itu</span></div><div class="tile"><b>${f(pvE)}<small> kWh</small></b><span>produksi PLTS hari itu</span></div><div class="tile"><b>${f(pvMax)}<small> kW</small></b><span>output PLTS tertinggi</span></div><div class="tile"><b>${f(Math.min(...rt.filter(v=>v>0)))}<small> kW</small></b><span>beban diesel terendah</span></div><div class="tile"><b>${UNITS.filter(([c])=>c!==8&&rm.rows.some(r=>r[c]>0)).length}</b><span>unit diesel beroperasi</span></div></div>
  <div class="card"><h3>Pembebanan per unit · ${esc(rm.tanggal)}</h3>${rjChart(rm)}${rjTable(rm)}</div></section>`}
 
+/* ---------- insight ---------- */
+function vInsight(){const nd=D.ndao.map(ndaoStats),N=nd.length;const E=nd.reduce((a,s)=>a+s.energy,0)/N,day=nd.reduce((a,s)=>a+s.day,0)/N,night=nd.reduce((a,s)=>a+s.night,0)/N,lf=nd.reduce((a,s)=>a+s.lf,0)/N;
+ const pkM=nd.reduce((b,s,i)=>s.peak>nd[b].peak?i:b,0),pk=nd[pkM],share=nd.reduce((a,s)=>a+s.avg.slice(8,17).reduce((x,y)=>x+y,0)/s.avg.reduce((x,y)=>x+y,0),0)/N,zeros=nd.reduce((a,s)=>a+s.zeros,0),hours=D.ndao.reduce((a,m)=>a+24*m.ndays,0),odd=nd.filter(s=>s.pw[0]<5||s.pw[0]>22).map((s,i)=>s).length;
+ const oddM=D.ndao.filter((m,i)=>nd[i].pw[0]<5).map((m,i)=>m.m.slice(0,3)+' '+HOUR(nd[D.ndao.indexOf(m)].pw[0]));
+ const cap=k=>{const r=D.mesin[k],t=r.reduce((a,x)=>a+x.dmp,0),mx=Math.max(...r.map(x=>x.dmp));return {dmp:t,n1:t-mx,mx,dt:r.reduce((a,x)=>a+x.dt,0),n:r.length}};
+ const C={ndao:cap('ndao'),raijua:cap('raijua'),seba:cap('seba')};
+ const rj=D.raijua.map(m=>{const t=m.rows.map(r=>r[9]),pv=m.rows.map(r=>r[8]),dE=t.reduce((a,b)=>a+b,0),pE=pv.reduce((a,b)=>a+b,0),mid=m.rows.slice(9,16),md=mid.reduce((a,r)=>a+r[9],0)/7,mp=mid.reduce((a,r)=>a+r[8],0)/7;return {m:m.m,peak:m.peak,dE,pE,share:pE/(dE+pE),midPv:mp/(md+mp),dmin:Math.min(...t.filter(v=>v>0)),pvMax:Math.max(...pv)}});
+ const rjPk=rj.reduce((b,s)=>s.peak>b.peak?s:b,rj[0]),rjPv=rj.filter(s=>s.pE>0),rjShare=rjPv.reduce((a,s)=>a+s.share,0)/rjPv.length,rjMid=Math.max(...rjPv.map(s=>s.midPv)),rjOver=rj.filter(s=>s.peak>C.raijua.n1).map(s=>s.m),rjMin=Math.min(...rjPv.map(s=>s.dmin));
+ const rote={peak:8500,cap:9000,pv:180},sabu={peak:4200,cap:C.seba.dmp,pv:1400};
+ const T=(v,u,l)=>`<div class="tile"><b>${v}<small> ${u}</small></b><span>${l}</span></div>`;
+ const card=(t,sub,find,rec,tag)=>`<div class="card"><div class="hd" style="margin-bottom:6px"><div><h3>${t}</h3><span class="small mute">${sub}</span></div>${tag||''}</div>
+  <h4>Temuan dari data</h4><ul class="clean small" style="margin:6px 0 12px">${find.map(x=>`<li>${x}</li>`).join('')}</ul>
+  <h4>Rekomendasi</h4><div class="steps" style="margin-top:6px">${rec.map((x,i)=>`<div><i>${i+1}</i><span>${x}</span></div>`).join('')}</div></div>`;
+ return `<section><div class="hd"><h2>Insight & rekomendasi</h2><p class="mute">Semua angka di halaman ini dihitung langsung dari berkas PLN yang ada di portal (data mesin, langgam beban, SLD) dan dibaca terhadap lingkup RFP IESR 1772 dan 1773. Angka berubah otomatis jika data diperbarui.</p></div>
+ <div class="tiles">${T(f(C.ndao.n1),'kW','N-1 Ndao, di bawah puncak '+f(pk.peak)+' kW')}${T(f(C.raijua.n1),'kW','N-1 Raijua, dilampaui pada '+rjOver.join(', '))}${T(f(sabu.peak-sabu.cap),'kW','defisit Sabu ditutup sewa + PLTS')}${T(f((rote.cap-rote.peak)/rote.cap*100),'%','cadangan Rote di atas puncak')}${T(f(share*100),'%','energi Ndao jatuh pada jam 09–17')}${T(f(rjShare*100),'%','porsi PLTS Raijua pada hari puncak (Jul–Okt)')}</div>
+ <div class="grid g2">
+ ${card('Ndao','RFP 1773 · pulau kecil · logsheet Jan–Okt 2026',[
+  `Puncak ${f(pk.peak)} kW (${D.ndao[pkM].label}, ${HOUR(pk.pw[0])}) hanya ${f(C.ndao.dmp-pk.peak)} kW di bawah DMP ${f(C.ndao.dmp)} kW. Jika satu mesin ${f(C.ndao.mx)} kW lepas, sisa ${f(C.ndao.n1)} kW tidak cukup: <b>kriteria N-1 tidak terpenuhi</b> pada jam puncak.`,
+  `DMP hanya ${f(C.ndao.dmp/C.ndao.dt*100)}% dari daya terpasang ${f(C.ndao.dt)} kW. Mesin sudah derating berat, sehingga BESS yang mampu grid-forming bernilai ganda: cadangan putar dan penggeser energi surya.`,
+  `Beban siang 10–16 rata-rata ${f(day)} kW, malam 19–22 rata-rata ${f(night)} kW. Hanya ${f(share*100)}% energi harian (${f(E)} kWh) jatuh pada jam 09–17, jadi PLTS tanpa baterai mentok di porsi EBT sekitar 25–30%. Porsi 40% ke atas mengharuskan baterai.`,
+  `Faktor beban ${f(lf*100)}%: kurva cukup rata di malam hari, cocok untuk BESS 3–4 jam. Jam bernilai 0 hanya ${zeros} dari ${f(hours)} jam (${f(zeros/hours*100,1)}%), terkonsentrasi Januari–Februari.`,
+  `Puncak beberapa bulan tercatat dini hari (${oddM.join(', ')}); kemungkinan salah catat dan perlu dicek ke logsheet asli sebelum dipakai di simulasi.`],
+  ['Jadikan S2 (300 kWp + BESS 600 kWh) sebagai base case simulasi: menutup beban siang penuh, menggeser 2–3 jam beban petang, dan sekaligus memenuhi N-1 lewat BESS tanpa membeli mesin baru.',
+   'Jalankan HOMER Pro / SAM dengan 10 bulan langgam ini; isi November–Desember dengan profil Oktober dikalikan faktor pertumbuhan, dan nyatakan sebagai asumsi.',
+   'Verifikasi lahan PLTS yang disebut "sudah tersedia" saat kunjungan: koordinat, status tanah, jarak ke PLTD, dan risiko korosi pantai.',
+   'Minta PLN: konsumsi BBM bulanan dan jam operasi tiap mesin, supaya SFC dan biaya pasok diesel bisa dihitung, bukan diasumsikan.'])}
+ ${card('Raijua','Data lengkap, tetapi di luar lingkup RFP 1772',[
+  `Puncak ${f(rjPk.peak)} kW (${rjPk.m}) <b>melampaui N-1 ${f(C.raijua.n1)} kW</b>; bulan ${rjOver.join(' dan ')} sama-sama melewatinya. Puncak selalu pukul 19.00.`,
+  `PLTS sudah memasok rata-rata ${f(rjShare*100)}% energi pada hari puncak Jul–Okt dan sampai ${f(rjMid*100)}% beban tengah hari. Beban diesel siang turun sampai ${f(rjMin)} kW, jadi menambah PLTS tanpa baterai akan tersisih oleh beban minimum mesin.`,
+  `Jumlah unit yang beroperasi bervariasi 3–5 per hari dengan mesin terbesar ${f(C.raijua.mx)} kW DMP. Sistem bergantung pada satu mesin besar: risiko operasi tinggi.`,
+  `RFP 1772 (Sec. 2.3) hanya menyebut Pulau Sabu. Pekerjaan Raijua tidak dibayar oleh kontrak ini.`],
+  ['Ajukan Raijua sebagai site tambahan secara tertulis di inception report, dengan opsi: dikerjakan ringan (ringkasan data + arah desain) di dalam anggaran, atau dijadikan usulan kerja lanjutan.',
+   'Jika disetujui, pakai S2 (400 kWp + BESS 600 kWh) sebagai base case; BESS wajib karena PLTS tanpa baterai sudah mendekati batas penetrasi siang.',
+   'Minta data produksi harian PLTS Raijua dan curtailment sejak Juli 2026 untuk memvalidasi batas penetrasi.',
+   'Jika tidak disetujui, serahkan data ini ke IESR sebagai lampiran, supaya tetap menjadi bahan FS berikutnya.'],'<span class="tag w">Di luar RFP</span>')}
+ ${card('Sabu','RFP 1772 · sistem besar · 5 penyulang',[
+  `DMP PLTD Seba ${f(sabu.cap)} kW berada <b>${f(sabu.peak-sabu.cap)} kW di bawah puncak ${f(sabu.peak)} kW</b>. Selisihnya ditutup 6 unit diesel sewa dan PLTS Eilode 1,4 MWp: biaya pasok saat ini hampir pasti mahal, sehingga kasus ekonominya kuat.`,
+  `${C.seba.n} mesin dari 6 merek dengan DMP ${f(C.seba.dmp/C.seba.dt*100)}% dari daya terpasang: armada tua dan beragam, O&M rumit. Unit terbesar ${f(C.seba.mx)} kW; N-1 ${f(C.seba.n1)} kW jauh di bawah puncak.`,
+  `PLTS Eilode tanpa baterai masuk lewat express berbeban ke P. Menia dan P. Bolou. Dengan beban siang ±2.900 kW, penetrasi sesaat bisa mencapai ±35–40%: batas stabilitas dan curtailment harus dihitung, bukan diasumsikan.`,
+  `Langgam beban Sabu dan produksi Eilode belum diterima; semua angka beban Sabu masih dari catatan rapat dan label SLD.`],
+  ['Prioritaskan permintaan data: langgam beban per penyulang (5 penyulang), produksi harian PLTS Eilode dan curtailment, serta biaya kontrak diesel sewa.',
+   'Kaji BESS di Eilode sebagai pengganti diesel sewa lebih dulu; ini opsi dengan payback tercepat karena menggantikan biaya sewa, bukan sekadar BBM.',
+   'Lakukan studi integrasi jaringan (PowerFactory/ETAP atau metode sederhana yang dibenarkan) untuk menentukan batas penetrasi PLTS per penyulang, sesuai Sec. 2.4 RFP.',
+   'Gunakan lokasi stasiun ukur surya IESR di Sabu sebagai acuan resource, lalu cari lahan tambahan dekat GI/PLTD Seba dan P. Bolou.'])}
+ ${card('Rote','RFP 1773 · sistem besar · PLTD BGP 9 MW',[
+  `Puncak ${f(rote.peak)} kW vs DMP ${f(rote.cap)} kW: cadangan hanya ${f(rote.cap-rote.peak)} kW (${f((rote.cap-rote.peak)/rote.cap*100)}%). Dengan beban terbesar dari empat sistem, Rote adalah penghemat BBM terbesar per kWp yang dipasang.`,
+  `PLTS tersambung baru ${f(rote.pv)} kWp (Usulandu + Landuthi), setara ${f(rote.pv/rote.peak*100,1)}% beban puncak. Porsi EBT praktis nol.`,
+  `Jaringan luas: ±300 gardu, ±304 trafo, ±19,5 MVA, dua GH (Ba'a dan Onatali). Lokasi PLTS harus dekat GH atau penyulang berbeban tinggi agar tidak membebani jaringan 20 kV yang panjang.`,
+  `Data mesin PLTD BGP, langgam beban per penyulang, dan konsumsi BBM Rote belum diterima; beban puncak 8.500 kW berasal dari label SLD Juni 2026.`],
+  ['Targetkan PLTS 3–5 MWp bertahap plus BESS di dekat GH Ba\'a/Onatali sebagai skenario utama, dengan tahap 1 tanpa baterai di bawah batas penetrasi siang.',
+   'Minta data: produksi harian dan BBM PLTD BGP, langgam beban per penyulang, rencana PLN (RUPTL) untuk Rote, dan data stasiun ukur surya IESR di Rote.',
+   'Petakan kandidat lahan dengan GIS: buffer 1 km dari GH dan penyulang utama, status tanah, zona rawan siklon dan korosi; serahkan file GIS editable sesuai Sec. 2.1 poin 9.',
+   'Kaji FGD di Ba\'a bersama Pemkab untuk memvalidasi proyeksi beban dari pariwisata, perikanan, dan rumput laut sesuai Sec. 2.1 poin 2.'])}
+ </div></section>
+ <section class="sec grid g2">
+  <div class="card"><h3>Lingkup dan jadwal menurut RFP</h3><div class="twrap" style="margin-top:8px"><table><thead><tr><th>RFP</th><th>Pulau</th><th class="r">Anggaran maks</th><th>Catatan</th></tr></thead><tbody>
+   <tr><td>1773/IESR/X/DIR-CJET/CJET/2026</td><td>Rote + Ndao</td><td class="r">Rp 500 juta</td><td>Dua sistem terpisah, FGD di Ba'a</td></tr>
+   <tr><td>1772/IESR/X/DIR-CJET/CJET/2026</td><td>Sabu</td><td class="r">Rp 300 juta</td><td>Raijua tidak disebut; bisa diusulkan sebagai site tambahan</td></tr></tbody>
+   <tfoot><tr><td colspan="4">Keduanya: November 2026 – April 2027, anggaran termasuk pajak, output menjadi milik IESR, pihak ketiga wajib diungkap dan disetujui (Sec. 2.5, 3.1).</td></tr></tfoot></table></div>
+   <h4 style="margin-top:14px">Deliverable</h4><ul class="clean small" style="margin-top:6px"><li><b>D1</b> Inception report, minggu ke-4 November 2026</li><li><b>D2</b> Baseline dan laporan pengumpulan data, minggu ke-4 Januari 2027</li><li><b>D3</b> Laporan antara: resource, site, opsi teknis, minggu ke-4 Maret 2027</li><li><b>D4</b> Laporan akhir, serah terima data/model, transfer pengetahuan, minggu ke-4 April 2027</li></ul></div>
+  <div class="card"><h3>Prioritas 30 hari ke depan</h3><div class="steps" style="margin-top:8px">
+   <div><i>1</i><span>Kirim inception report D1: metodologi, daftar data, asumsi, dan usulan tertulis soal Raijua.</span></div>
+   <div><i>2</i><span>Ungkapkan anggota tim GIS ke IESR lewat email resmi (nama, lingkup, man-day) dan minta persetujuan.</span></div>
+   <div><i>3</i><span>Surat permintaan data ke PLN UP3 Kupang: langgam beban Rote dan Sabu per penyulang, data mesin BGP, BBM bulanan, produksi PLTS Eilode.</span></div>
+   <div><i>4</i><span>Bersihkan langgam Ndao (anomali Maret, puncak dini hari) dan bangun profil 8.760 jam untuk HOMER.</span></div>
+   <div><i>5</i><span>Jadwalkan kunjungan lapangan Desember–Januari: Ba'a, Ndao, Seba; survei lahan dengan koordinat dan foto.</span></div>
+   <div><i>6</i><span>Siapkan kerangka model keuangan (LCOE, NPV, IRR, payback) dan metodologi GHG agar siap diisi saat data BBM datang.</span></div></div>
+   <h4 style="margin-top:14px">Risiko utama</h4><ul class="clean small" style="margin-top:6px"><li>Data PLN terlambat: mitigasi dengan proxy yang dinyatakan terbuka (Sec. 2.5 Data Transparency).</li><li>Lingkup melebar ke Raijua tanpa anggaran: putuskan di inception, tertulis.</li><li>Puncak Sabu dan Rote belum terverifikasi: semua sizing sistem besar diberi rentang, bukan angka tunggal.</li></ul></div>
+ </section>`}
+
 /* ---------- SLD ---------- */
 function vSld(){const s=SLDS[sel.sld];
  return `<div class="filters"><div class="seg" role="tablist">${SLDS.map((x,i)=>`<button role="tab" aria-pressed="${i===sel.sld}" data-sld="${i}">${x.k==='rote'?'Rote & Ndao':x.k==='sabu'?'Sabu':'Raijua'}</button>`).join('')}</div>
@@ -402,7 +474,7 @@ function vSumber(){const F=[['pdf','SLD-Rote-Ndao-Jun-2026.pdf','Single Line ULP
  <div class="card"><h3>Istilah</h3><dl class="facts" style="margin-top:8px"><dt>DT</dt><dd>Daya terpasang (nameplate)</dd><dt>DMN</dt><dd>Daya mampu netto setelah derating</dd><dt>DMP</dt><dd>Daya mampu pasok yang bisa diandalkan</dd><dt>N-1</dt><dd>Daya mampu saat mesin terbesar lepas</dd><dt>Faktor beban</dt><dd>Beban rata-rata dibagi beban puncak</dd><dt>FCO / LBS / REC</dt><dd>Fuse cut out, load break switch, recloser</dd><dt>GH</dt><dd>Gardu hubung</dd></dl></div></div></div>`}
 
 /* ---------- router & events ---------- */
-const VF={ringkasan:vRingkasan,sistem:vSistem,beban:vBeban,sld:vSld,sumber:vSumber};
+const VF={ringkasan:vRingkasan,insight:vInsight,sistem:vSistem,beban:vBeban,sld:vSld,sumber:vSumber};
 function route(){const v=location.hash.slice(1).split('?')[0];return VIEWS.some(x=>x[0]===v)?v:'ringkasan'}
 function render(){const v=route();$('#nav').innerHTML=VIEWS.map(([k,l])=>`<a href="#${k}"${k===v?' aria-current="page"':''}>${l}</a>`).join('');
  const app=$('#app');app.innerHTML=`<div class="view on">${VF[v]()}</div>`;document.title=(v==='ringkasan'?'':VIEWS.find(x=>x[0]===v)[1]+' · ')+'Data Sistem Rote Ndao & Sabu Raijua';
