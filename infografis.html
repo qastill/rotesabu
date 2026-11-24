@@ -69,7 +69,7 @@ p{margin:0}
 <div class="sun"></div>
 <div class="head"><div><span class="badge">Pre-FS PLTS + BESS · Nusa Tenggara Timur · 2026</span>
  <h1 style="margin-top:14px">Empat sistem pulau,<br><span>satu arah: lebih sedikit solar</span></h1>
- <p class="lead">Rote, Ndao, Sabu, dan Raijua masih bergantung pada PLTD. Beban puncaknya jatuh pukul 18–19, sementara matahari ada pukul 06–18. Celah itulah yang harus ditutup PLTS dan baterai.</p></div>
+ <p class="lead">Rote, Ndao, Sabu, dan Raijua masih bergantung pada PLTD. Beban puncaknya jatuh pukul 19.00, sementara matahari ada pukul 06–18. Tanpa baterai, porsi EBT di semua sistem mentok ±13–16%. Celah itulah yang harus ditutup PLTS dan baterai.</p></div>
  <div class="map" id="map"></div></div>
 <div class="row" id="row"></div>
 <div class="two">
@@ -77,14 +77,17 @@ p{margin:0}
  <div class="panel"><div class="hd"><h3>Raijua: PLTS mendesak diesel</h3><span id="rjsub"></span></div><div class="chart" id="c2"></div><div class="callout" id="k2"></div></div>
 </div>
 <div class="take" id="take"></div>
-<div class="foot"><span>Sumber: PT PLN (Persero) UIW NTT, UP3 Kupang, ULP Rote Ndao, ULP Sabu Raijua · SLD Jun & Okt 2026 · langgam beban Jan–Okt 2026 · data mesin Nov 2026. Beban puncak Rote dan Sabu belum diverifikasi logsheet.</span><span><b>rotesabu.vercel.app</b></span></div>
+<div class="foot"><span>Sumber: PT PLN (Persero) UIW NTT, UP3 Kupang, ULP Rote Ndao, ULP Sabu Raijua · SLD Jun & Okt 2026 · neraca daya Rote Sep 2026 · langgam beban Jan–Okt 2026 (Rote Sep, Sabu Okt per unit) · data mesin Nov 2026. Semua beban puncak dari logsheet.</span><span><b>rotesabu.vercel.app</b></span></div>
 </div></div>
 <script src="data.js"></script>
+<script src="analisis.js"></script>
 <script>
 {
 const D=window.DATA,$=s=>document.querySelector(s),f=(v,d=0)=>Number(v).toLocaleString('id-ID',{maximumFractionDigits:d,minimumFractionDigits:d}),SUS=300,H=i=>String(i+1).padStart(2,'0')+'.00';
 const cap=k=>{const r=D.mesin[k],t=r.reduce((a,x)=>a+x.dmp,0),mx=Math.max(...r.map(x=>x.dmp));return {dmp:t,n1:t-mx,dt:r.reduce((a,x)=>a+x.dt,0)}};
 const C={ndao:cap('ndao'),raijua:cap('raijua'),seba:cap('seba')};
+const A=window.AN,NR=D.neraca.rote,LS=A.lgStats,MX=A.MIX,plnR=NR.units.filter(u=>!/sewa/i.test(u.lok)).reduce((a,u)=>a+u.dm,0),sewaR=NR.dm-plnR,pc=v=>f(v*100)+'%';
+const HC=Object.fromEntries(['rote','ndao','sabu','raijua'].map(k=>{const p=A.hosting(k);return [k,{p,re:A.simulate(A.SER[k],{pv:p,bess:0}).re}]})),S2=k=>{const [,,pv,b,bk]=A.SCEN[k][1];return {pv,b,bk,re:A.simulate(A.SER[k],{pv,bess:b,bkw:bk}).re}};
 // Ndao: kurva rata-rata 10 bulan
 const avg=Array(24).fill(0),cnt=Array(24).fill(0);let ndPeak=0,ndE=0,nM=0;
 for(const m of D.ndao){const n=m.ndays;let daily=[];for(let d=0;d<n;d++){let s=0;for(let h=0;h<24;h++){const v=m.grid[h][d];if(v>0&&v<=SUS){avg[h]+=v;cnt[h]++;s+=v;if(v>ndPeak)ndPeak=v}}if(s>0)daily.push(s)}ndE+=daily.reduce((a,b)=>a+b,0)/daily.length;nM++}
@@ -93,15 +96,15 @@ const share=avg.slice(8,17).reduce((a,b)=>a+b,0)/avg.reduce((a,b)=>a+b,0),day=av
 // Raijua: bulan puncak tertinggi
 const rm=D.raijua.reduce((b,m)=>m.peak>b.peak?m:b,D.raijua[0]),rT=rm.rows.map(r=>r[9]),rP=rm.rows.map(r=>r[8]),rPeak=Math.max(...rT),rMid=rm.rows.slice(9,16),midPv=rMid.reduce((a,r)=>a+r[8],0)/rMid.reduce((a,r)=>a+r[8]+r[9],0),pvE=rP.reduce((a,b)=>a+b,0),dE=rT.reduce((a,b)=>a+b,0);
 const SYS=[
- {n:'Rote',tag:'Sistem besar · RFP 1773',cap:9000,peak:8500,pv:'180 kWp tersambung (2% beban puncak)',note:'PLTD BGP 9 MW · ±300 gardu · GH Ba\'a & Onatali'},
+ {n:'Rote',tag:'Sistem besar · RFP 1773',cap:NR.dm,own:plnR,peak:LS.rote.peak,pv:'180 kWp tersambung (2% beban puncak)',note:`${pc(sewaR/NR.dm)} daya mampu dari PLTD sewa BGP · PLN sendiri ${f(plnR)} kW`},
  {n:'Ndao',tag:'Pulau kecil · RFP 1773',cap:C.ndao.dmp,peak:ndPeak,pv:'belum ada PLTS · lahan tersedia',note:`5 mesin · terpasang ${f(C.ndao.dt)} kW · N-1 ${f(C.ndao.n1)} kW`,n1:C.ndao.n1},
- {n:'Sabu',tag:'Sistem besar · RFP 1772',cap:C.seba.dmp,peak:4200,pv:'Eilode 1,4 MWp tanpa baterai + 6 unit diesel sewa',note:`13 mesin · terpasang ${f(C.seba.dt)} kW · 5 penyulang`},
+ {n:'Sabu',tag:'Sistem besar · RFP 1772',cap:C.seba.dmp,peak:LS.sabu.peak,pv:`Eilode 1,4 MWp tanpa baterai, ${pc(MX.sabu.share.pv)} energi Okt`,note:`${pc(MX.sabu.share.sewa+MX.sabu.share.pv)} energi Okt dari pembangkit sewa SPI · mesin PLN mati pukul 10–16`},
  {n:'Raijua',tag:'Pulau kecil · di luar RFP',w:true,cap:C.raijua.dmp,peak:rPeak,pv:`PLTS memasok sejak Jul 2026, s.d. ${f(Math.max(...D.raijua.flatMap(m=>m.rows.map(r=>r[8]))))} kW`,note:`6 mesin · terpasang ${f(C.raijua.dt)} kW · N-1 ${f(C.raijua.n1)} kW`,n1:C.raijua.n1}];
 $('#row').innerHTML=SYS.map(s=>{const mx=Math.max(s.cap,s.peak)*1.04,gap=s.cap-s.peak,n1=s.n1!=null&&s.n1<s.peak;
  return `<div class="sys"><div class="t"><h2>${s.n}</h2><span class="tag${s.w?' w':''}">${s.tag}</span></div>
- <div class="big">${f(s.peak)}<small> kW</small></div><div class="sub">beban puncak tercatat</div>
+ <div class="big">${f(s.peak)}<small> kW</small></div><div class="sub">beban puncak, logsheet 2026</div>
  <div class="meter"><div><span>Mampu</span><s style="width:${s.cap/mx*100}%"></s><em>${f(s.cap)}</em></div><div><span>Puncak</span><s class="pk" style="width:${s.peak/mx*100}%"></s><em>${f(s.peak)}</em></div></div>
- <div class="stat ${gap<0||n1?'w':'ok'}">${gap<0?`Defisit ${f(-gap)} kW, ditutup diesel sewa + PLTS`:n1?`Cadangan ${f(gap)} kW, tetapi N-1 tidak terpenuhi`:`Cadangan ${f(gap)} kW (${f(gap/s.cap*100)}%)`}</div>
+ <div class="stat ${gap<0||n1||s.own?'w':'ok'}">${s.own?`Tanpa sewa kurang ${f(s.peak-s.own)} kW`:gap<0?`Defisit ${f(-gap)} kW, ditutup diesel sewa + PLTS`:n1?`Cadangan ${f(gap)} kW, tetapi N-1 tidak terpenuhi`:`Cadangan ${f(gap)} kW (${f(gap/s.cap*100)}%)`}</div>
  <div class="pv"><b>PLTS:</b> ${s.pv}</div><div class="pv">${s.note}</div></div>`}).join('');
 // peta
 $('#map').innerHTML=`<svg viewBox="0 0 840 390" aria-hidden="true">
@@ -121,7 +124,7 @@ $('#map').innerHTML=`<svg viewBox="0 0 840 390" aria-hidden="true">
  <text x="${x(6)+6}" y="${y(0)-8}" style="fill:#8a6a00;font-weight:600">jam matahari 06–18</text>
  <circle cx="${x(18)}" cy="${y(avg[18])}" r="5" fill="var(--acc)"/><text x="${x(18)-8}" y="${y(avg[18])-10}" text-anchor="end" style="fill:var(--ink);font-weight:700">puncak ${f(avg[18])} kW · 19.00</text>
  ${[0,6,12,18,23].map(h=>`<text x="${x(h)}" y="${Hh-8}" text-anchor="middle">${H(h)}</text>`).join('')}<line class="ax" x1="${L}" x2="${W-R}" y1="${y(0)}" y2="${y(0)}"/></svg>`;
- $('#k1').innerHTML=`<b>${f(share*100)}%</b><span>energi harian jatuh pada jam 09–17. Siang rata-rata ${f(day)} kW, malam ${f(night)} kW. PLTS tanpa baterai mentok di porsi EBT ±25–30%; di atas itu wajib BESS.</span>`}
+ $('#k1').innerHTML=`<b>${f(share*100)}%</b><span>energi harian jatuh pada jam 09–17. Siang rata-rata ${f(day)} kW, malam ${f(night)} kW. Simulasi per jam: PLTS tanpa baterai hanya terserap ±${f(HC.ndao.p)} kWp (EBT ${pc(HC.ndao.re)}); di atas itu wajib BESS.</span>`}
 // chart 2: Raijua hari puncak, diesel vs PLTS
 {const W=520,Hh=230,L=40,R=10,T=14,B=28,n=24,bw=(W-L-R)/n,mx=Math.max(...rT.map((v,i)=>v+rP[i]))*1.12,y=v=>T+(Hh-T-B)-v/mx*(Hh-T-B);
  $('#rjsub').textContent=`hari puncak bulanan, ${rm.tanggal.replace(/\s+/g,' ').toLowerCase()}`;
@@ -132,9 +135,9 @@ $('#map').innerHTML=`<svg viewBox="0 0 840 390" aria-hidden="true">
  <div class="legend"><span><i style="background:var(--sea)"></i>Diesel</span><span><i style="background:var(--s4)"></i>PLTS</span><span><i style="background:var(--warn);height:3px"></i>batas N-1</span></div>`;
  $('#k2').innerHTML=`<b>${f(midPv*100)}%</b><span>beban tengah hari sudah dipikul PLTS; beban diesel turun sampai ${f(Math.min(...rT.filter(v=>v>0)))} kW. Puncak ${f(rPeak)} kW pukul 19.00 melampaui N-1. Tambahan PLTS berikutnya hanya berguna bersama baterai.</span>`}
 $('#take').innerHTML=[
- ['1','Pulau kecil: baterai dulu, bukan sekadar panel',`Ndao dan Raijua sama-sama gagal N-1 di jam puncak. BESS grid-forming memberi cadangan putar sekaligus menggeser energi surya ke malam. Base case: Ndao 300 kWp + 600 kWh, Raijua 400 kWp + 600 kWh.`],
- ['2','Sistem besar: ganti yang paling mahal lebih dulu',`Sabu defisit ${f(4200-C.seba.dmp)} kW dan membayar diesel sewa; BESS di Eilode adalah opsi dengan payback tercepat. Rote 8,5 MW dengan PLTS 2% adalah penghemat BBM terbesar per kWp.`],
- ['3','Data yang menentukan hasil',`Masih ditunggu: langgam beban Rote dan Sabu per penyulang, data mesin dan BBM PLTD BGP, produksi harian PLTS Eilode. Tanpa itu, sizing sistem besar tetap berupa rentang.`]].map(([i,t,p])=>`<div class="tk"><i>${i}</i><div><h3>${t}</h3><p>${p}</p></div></div>`).join('');
+ ['1','Pulau kecil: baterai dulu, bukan sekadar panel',`Ndao dan Raijua sama-sama gagal N-1 di jam puncak. BESS grid-forming memberi cadangan putar sekaligus menggeser energi surya ke malam. Base case: Ndao 300 kWp + 600 kWh (EBT ±${pc(S2('ndao').re)}), Raijua 400 kWp + 600 kWh (±${pc(S2('raijua').re)}).`],
+ ['2','Sistem besar: yang digantikan adalah sewa',`${pc(sewaR/NR.dm)} daya mampu Rote dan ${pc(MX.sabu.share.sewa+MX.sabu.share.pv)} energi Sabu berasal dari pembangkit sewa. Rote menyerap ±${f(HC.rote.p/1000,1)} MWp PLTS tanpa baterai karena beban siangnya tidak pernah di bawah ±4,4 MW; Sabu hanya ±${f(HC.sabu.p/1000,1)} MWp termasuk Eilode, sehingga BESS di Eilode jadi prioritas.`],
+ ['3','Data yang menentukan hasil',`Langgam per jam Rote (Sep) dan Sabu (Okt) sudah ada. Masih ditunggu: kontrak sewa BGP dan SPI, BBM bulanan, data 12 bulan untuk musim, produksi dan curtailment PLTS Eilode.`]].map(([i,t,p])=>`<div class="tk"><i>${i}</i><div><h3>${t}</h3><p>${p}</p></div></div>`).join('');
 // skala poster di layar sempit
 const fit=()=>{const w=innerWidth-32,p=$('#poster');if(w<1200){const k=w/1200;p.style.transform=`scale(${k})`;p.parentElement.style.height=(p.offsetHeight*k+16)+'px'}else{p.style.transform='';p.parentElement.style.height=''}};
 addEventListener('resize',fit);fit();
